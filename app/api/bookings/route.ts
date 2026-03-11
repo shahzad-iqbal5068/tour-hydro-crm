@@ -28,8 +28,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(booking, { status: 201 });
   } catch (error) {
     console.error("Error creating booking:", error);
+    const message =
+      error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Internal server error", error: message },
       { status: 500 }
     );
   }
@@ -69,8 +71,10 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     console.error("Error fetching bookings:", error);
+    const message =
+      error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Internal server error", error: message },
       { status: 500 }
     );
   }
