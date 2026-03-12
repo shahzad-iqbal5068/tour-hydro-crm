@@ -52,14 +52,20 @@ const sections: {
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname === "/login" || pathname === "/register";
-  const [theme, setTheme] = useState<"light" | "dark">(
-    (typeof window !== "undefined" &&
-      (window.localStorage.getItem("theme") as "light" | "dark" | null)) ||
-      "light"
-  );
+  // Important: keep initial render deterministic to avoid hydration mismatch.
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<SectionKey>("dashboard");
   const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    const stored = window.localStorage.getItem("theme");
+    if (stored === "light" || stored === "dark") {
+      setTheme(stored);
+    }
+  }, []);
 
   useEffect(() => {
     if (theme === "dark") {
@@ -161,6 +167,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             theme={theme}
             onToggleTheme={toggleTheme}
             user={user}
+              mounted={mounted}
           />
 
           <main className="min-w-0 flex-1 bg-zinc-50 p-4 text-zinc-700 dark:bg-black dark:text-zinc-50 md:p-6">

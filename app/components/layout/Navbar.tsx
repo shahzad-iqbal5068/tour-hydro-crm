@@ -7,6 +7,7 @@ type NavbarProps = {
   theme: "light" | "dark";
   onToggleTheme: () => void;
   user: AuthUser | null;
+  mounted: boolean;
 };
 
 export function Navbar({
@@ -14,6 +15,7 @@ export function Navbar({
   theme,
   onToggleTheme,
   user,
+  mounted,
 }: NavbarProps) {
   const initials =
     user?.name
@@ -40,7 +42,9 @@ export function Navbar({
           className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-xs text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
           aria-label="Toggle theme"
         >
-          {theme === "light" ? "🌙" : "☀️"}
+          <span suppressHydrationWarning>
+            {mounted ? (theme === "light" ? "🌙" : "☀️") : "🌙"}
+          </span>
         </button>
 
         {user && (
