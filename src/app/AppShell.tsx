@@ -26,17 +26,17 @@ const sections: {
       icon: <LayoutDashboard className="h-5 w-5" />,
       items: [
         { href: "/", label: "Home" },
-        { href: "/table", label: "Overview" },
+        // { href: "/table", label: "Overview" },
       ],
     },
     {
-      key: "bookings",
-      label: "Bookings",
+      key: "inqueries",
+      label: "Inqueries",
       icon: <ClipboardList className="h-5 w-5" />,
       items: [
-        { href: "/form", label: "New Booking" },
-        { href: "/table", label: "All Bookings" },
-        { href: "/attendance", label: "Attendance" },
+        { href: "/inqueries/form", label: "New Inquiry" },
+        { href: "/inqueries", label: "All Inqueries" },
+        // { href: "/attendance", label: "Follow-up" },
       ],
     },
     {
@@ -49,6 +49,7 @@ const sections: {
         { href: "/login", label: "Login" },
       ],
     },
+    
   ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {

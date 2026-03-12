@@ -1,4 +1,4 @@
-export type SectionKey = "dashboard" | "bookings" | "admin";
+export type SectionKey = "dashboard" | "inqueries" | "admin";
 
 export type AuthUser = {
   id: string;
@@ -25,22 +25,18 @@ export type UserRow = {
   avatarUrl?: string;
 };
 
-export type BookingRow = {
+export type InquiryRow = {
   _id: string;
   date: string;
   shift: string;
-  name: string;
-  email: string;
-  whatsappPackage: string;
+  whatsappName: string;
   remarks?: string;
 };
 
-export type BookingFormValues = {
+export type InquiryFormValues = {
   date: string;
   shift: string;
-  name: string;
-  email: string;
-  package: string;
+  whatsappName: string;
   remarks: string;
 };
 

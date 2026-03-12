@@ -1,33 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
-import { Booking } from "@/models/Booking";
+import { Inquiry } from "@/models/Inquiry";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { date, shift, name, email, whatsappPackage, remarks } = body;
+    const { date, shift, whatsappName, remarks } = body;
 
-    if (!date || !shift || !name || !email || !whatsappPackage) {
+    if (!date || !shift || !whatsappName) {
       return NextResponse.json(
-        { message: "Missing required fields" },
+        { message: "Date, shift and WhatsApp name are required" },
         { status: 400 }
       );
     }
 
     await connectToDatabase();
 
-    const booking = await Booking.create({
+    const inquiry = await Inquiry.create({
       date: new Date(date),
       shift,
-      name,
-      email,
-      whatsappPackage,
+      whatsappName,
       remarks,
     });
 
-    return NextResponse.json(booking, { status: 201 });
+    return NextResponse.json(inquiry, { status: 201 });
   } catch (error) {
-    console.error("Error creating booking:", error);
+    console.error("Error creating inquiry:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
@@ -40,21 +38,28 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const packageFilter = searchParams.get("package") || "";
+    const nameFilter = searchParams.get("package") || ""; // reuse existing param name
     const sortDate = searchParams.get("sortDate") || "desc";
     const page = Number(searchParams.get("page") || "1");
     const limit = Number(searchParams.get("limit") || "10");
+    const q = searchParams.get("q") || "";
 
     const query: Record<string, unknown> = {};
-    if (packageFilter) {
-      query.whatsappPackage = packageFilter;
+    if (nameFilter) {
+      query.whatsappName = nameFilter;
+    }
+    if (q) {
+      query.$or = [
+        { whatsappName: { $regex: q, $options: "i" } },
+        { remarks: { $regex: q, $options: "i" } },
+      ];
     }
 
     await connectToDatabase();
 
-    const total = await Booking.countDocuments(query);
+    const total = await Inquiry.countDocuments(query);
 
-    const bookings = await Booking.find(query)
+    const inquiries = await Inquiry.find(query)
       .sort({ date: sortDate === "asc" ? 1 : -1 })
       .skip((page - 1) * limit)
       .limit(limit)
@@ -62,7 +67,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       {
-        data: bookings,
+        data: inquiries,
         total,
         page,
         limit,
@@ -70,7 +75,7 @@ export async function GET(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error fetching bookings:", error);
+    console.error("Error fetching inquiries:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(

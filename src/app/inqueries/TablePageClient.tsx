@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { BookingRow } from "@/types";
+import type { InquiryRow } from "@/types";
 
 export default function TablePageClient() {
   const router = useRouter();
 
-  const [rows, setRows] = useState<BookingRow[]>([]);
+  const [rows, setRows] = useState<InquiryRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +23,7 @@ export default function TablePageClient() {
     [total, limit]
   );
 
-  const fetchBookings = async () => {
+  const fetchInquiries = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -38,7 +38,7 @@ export default function TablePageClient() {
         params.set("q", search);
       }
 
-      const res = await fetch(`/api/bookings?${params.toString()}`);
+      const res = await fetch(`/api/inquiries?${params.toString()}`);
       if (!res.ok) {
         throw new Error("Failed to load data");
       }
@@ -54,12 +54,12 @@ export default function TablePageClient() {
   };
 
   useEffect(() => {
-    fetchBookings();
+    fetchInquiries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sortDate, packageFilter, search]);
 
   const handleEdit = (id: string) => {
-    router.push(`/form?id=${id}`);
+      router.push(`/inqueries/form?id=${id}`);
   };
 
   const handlePrint = () => {
@@ -71,10 +71,10 @@ export default function TablePageClient() {
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Bookings
+            Inquiries
           </h1>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            All submissions from the WhatsApp package form.
+            All submissions from the WhatsApp Name form.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -92,10 +92,10 @@ export default function TablePageClient() {
           </div>
           <button
             type="button"
-            onClick={() => router.push("/form")}
+            onClick={() => router.push("/inqueries/form")}
             className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
-            New Booking
+            New Inquiry
           </button>
           <button
             type="button"
@@ -110,7 +110,7 @@ export default function TablePageClient() {
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div className="min-w-0 flex-1 sm:min-w-[14rem]">
           <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-            WhatsApp Package
+            WhatsApp Name
           </label>
           <select
             value={packageFilter}
@@ -120,12 +120,14 @@ export default function TablePageClient() {
             }}
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
           >
-            <option value="">All packages</option>
+            <option value="">All WhatsApp Names</option>
             <option value="dow-cruise-tripn">Dow Cruise Trip N</option>
             <option value="cruise-express">Cruise Express</option>
-            <option value="fun-and-fun">Fun and Fun</option>
+            <option value="fun-and-fun">Fun &amp; Fun</option>
             <option value="yacht-cruise">Yacht &amp; Cruise</option>
             <option value="blue-world">Blue World</option>
+            <option value="fun-factory">Fun Factory</option>
+            <option value="dubai-deals">Dubai Deals</option>
           </select>
         </div>
         <div>
@@ -170,18 +172,16 @@ export default function TablePageClient() {
           <thead>
             <tr className="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
               <th className="px-3 py-2 sm:px-4">Date</th>
-              <th className="px-3 py-2 sm:px-4">Name</th>
-              <th className="hidden px-3 py-2 sm:table-cell sm:px-4">Email</th>
               <th className="px-3 py-2 sm:px-4">Shift</th>
-              <th className="hidden px-3 py-2 sm:table-cell sm:px-4">Package</th>
+              <th className="px-3 py-2 sm:px-4">WhatsApp Name</th>
               <th className="hidden px-3 py-2 md:table-cell md:px-4">Remarks</th>
-              <th className="px-3 py-2 text-right sm:px-4">Actions</th>
+              <th className="px-3 py-2 text-right sm:px-4">Edit</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td
+                <td 
                   colSpan={7}
                   className="px-4 py-6 text-center text-sm text-zinc-500 dark:text-zinc-400"
                 >
@@ -203,7 +203,7 @@ export default function TablePageClient() {
                   colSpan={7}
                   className="px-4 py-6 text-center text-sm text-zinc-500 dark:text-zinc-400"
                 >
-                  No bookings found.
+                  No inquiries found.
                 </td>
               </tr>
             ) : (
@@ -217,18 +217,13 @@ export default function TablePageClient() {
                       ? new Date(row.date).toLocaleDateString()
                       : "-"}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2 font-medium text-zinc-900 dark:text-zinc-50 sm:px-4">
-                    {row.name}
-                  </td>
-                  <td className="hidden whitespace-nowrap px-3 py-2 text-zinc-700 dark:text-zinc-200 sm:table-cell sm:px-4">
-                    {row.email}
-                  </td>
+                  
                   <td className="whitespace-nowrap px-3 py-2 text-zinc-700 dark:text-zinc-200 sm:px-4">
                     {row.shift}
                   </td>
                   <td className="hidden sm:table-cell sm:px-4 sm:py-2">
                     <span className="inline-flex rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-                      {row.whatsappPackage}
+                      {row.whatsappName}
                     </span>
                   </td>
                   <td className="hidden max-w-[120px] truncate px-3 py-2 text-zinc-700 dark:text-zinc-200 md:table-cell md:max-w-none md:px-4">
