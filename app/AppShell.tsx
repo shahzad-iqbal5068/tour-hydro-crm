@@ -6,6 +6,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "./components/layout/Sidebar";
 import { Navbar } from "./components/layout/Navbar";
 import type { SectionKey, AuthUser } from "@/types";
+import {
+  LayoutDashboard,
+  ClipboardList,
+  CalendarClock,
+  Settings2,
+} from "lucide-react";
 
 const sections: {
   key: SectionKey;
@@ -17,9 +23,7 @@ const sections: {
     {
       key: "dashboard",
       label: "Dashboard",
-      icon: (
-        <span className="inline-block h-5 w-5 rounded-md border border-zinc-500" />
-      ),
+      icon: <LayoutDashboard className="h-5 w-5" />,
       items: [
         { href: "/", label: "Home" },
         { href: "/table", label: "Overview" },
@@ -28,22 +32,20 @@ const sections: {
     {
       key: "bookings",
       label: "Bookings",
-      icon: <span className="inline-block h-5 w-5 border-b-2 border-zinc-500" />,
+      icon: <ClipboardList className="h-5 w-5" />,
       items: [
         { href: "/form", label: "New Booking" },
         { href: "/table", label: "All Bookings" },
+        { href: "/attendance", label: "Attendance" },
       ],
     },
     {
       key: "admin",
       label: "Admin",
-      icon: (
-        <span className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-zinc-500 text-[10px] font-semibold">
-          A
-        </span>
-      ),
+      icon: <Settings2 className="h-5 w-5" />,
       items: [
         { href: "/admin/users", label: "Users" },
+        { href: "/admin/attendance", label: "Attendance" },
         { href: "/login", label: "Login" },
       ],
     },
@@ -58,6 +60,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<SectionKey>("dashboard");
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -99,6 +102,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         email: string;
         name: string;
         role: string;
+        avatarUrl?: string;
       };
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setUser({
@@ -106,6 +110,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         email: decoded.email,
         name: decoded.name,
         role: decoded.role,
+        avatarUrl: decoded.avatarUrl,
       });
       if (isAuthPage) {
         router.replace("/");
@@ -153,27 +158,30 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-zinc-50 text-zinc-700 dark:bg-black dark:text-zinc-50">
-      <Sidebar
-        sections={sections}
-        activeSection={activeSection}
-        onActiveSectionChange={setActiveSection}
+    <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-700 dark:bg-black dark:text-zinc-50">
+      <Navbar
+        sectionLabel={currentSection.label}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        user={user}
+        mounted={mounted}
+        onToggleSidebar={() =>
+          setMobileSidebarOpen((prev) => !prev)
+        }
       />
 
-      <div className="flex min-h-screen flex-1 flex-col md:flex-row">
-        <div className="flex min-h-screen flex-1 flex-col">
-          <Navbar
-            sectionLabel={currentSection.label}
-            theme={theme}
-            onToggleTheme={toggleTheme}
-            user={user}
-              mounted={mounted}
-          />
+      <div className="flex flex-1">
+        <Sidebar
+          sections={sections}
+          activeSection={activeSection}
+          onActiveSectionChange={setActiveSection}
+          isMobileOpen={mobileSidebarOpen}
+          onCloseMobile={() => setMobileSidebarOpen(false)}
+        />
 
-          <main className="min-w-0 flex-1 bg-zinc-50 p-4 text-zinc-700 dark:bg-black dark:text-zinc-50 md:p-6">
-            {children}
-          </main>
-        </div>
+        <main className="min-w-0 flex-1 bg-zinc-50 p-4 text-zinc-700 dark:bg-black dark:text-zinc-50 md:p-6">
+          {children}
+        </main>
       </div>
     </div>
   );

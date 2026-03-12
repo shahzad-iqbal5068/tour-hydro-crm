@@ -13,6 +13,7 @@ export interface IUser extends Document {
   email: string;
   passwordHash: string;
   role: UserRole;
+  avatarUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,6 +29,7 @@ const UserSchema = new Schema<IUser>(
       default: "SALES_EXEC",
       required: true,
     },
+    avatarUrl: { type: String },
   },
   { timestamps: true }
 );

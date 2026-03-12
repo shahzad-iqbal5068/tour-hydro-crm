@@ -8,6 +8,7 @@ export type JwtUser = {
   email: string;
   name: string;
   role: string;
+  avatarUrl?: string;
 };
 
 function getJwtSecret(): string {
@@ -21,6 +22,7 @@ export function signUser(user: IUser): string {
     email: user.email,
     name: user.name,
     role: user.role,
+    avatarUrl: user.avatarUrl,
   };
 
   const secret = process.env.JWT_SECRET || "dev-jwt-secret-change-me";
