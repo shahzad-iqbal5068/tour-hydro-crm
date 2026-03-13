@@ -113,11 +113,7 @@ export function Sidebar({
 
       {/* Icon sidebar */}
       <aside className="hidden w-16 flex-col border-r border-zinc-200 bg-white py-4 text-xs shadow-sm dark:border-zinc-800 dark:bg-zinc-950 md:flex">
-        <div className="mb-4 flex items-center justify-center">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 text-[11px] font-semibold text-white">
-            HC
-          </div>
-        </div>
+        {/* Sidebar icons */}
         <nav className="flex flex-1 flex-col items-center gap-4">
           {sections.map((section) => (
             <button

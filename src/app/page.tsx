@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import HomeStats from "./HomeStats";
 
 export const metadata: Metadata = {
   title: "Dashboard | Hydro CRM",
@@ -25,68 +26,13 @@ export default function Home() {
             Hydro CRM overview
           </h1>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Dummy sales metrics for tourist cruises. Later you can replace this
-            with real API data.
+            Inquiries and bookings from the database. Choose a period below.
           </p>
-        </div>
-        <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-initial sm:flex-none">
-          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 sm:min-w-0 sm:flex-initial">
-            <span>🔍</span>
-            <input
-              placeholder="Search clients, packages..."
-              className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500 sm:w-40"
-            />
-          </div>
         </div>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">
-            Today&apos;s inquiries
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            32
-          </p>
-          <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
-            +12% vs yesterday
-          </p>
-        </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">
-            Weekly bookings
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            216
-          </p>
-          <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
-            +8% vs last week
-          </p>
-        </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">
-            Monthly revenue
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            48,200 AED
-          </p>
-          <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
-            Approximate, based on package mix
-          </p>
-        </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">
-            Active WhatsApp leads
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            87
-          </p>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            Across all cruise packages
-          </p>
-        </div>
-      </div>
+      {/* Inquiries, bookings & summary cards with period dropdown */}
+      <HomeStats />
 
       {/* Package performance charts */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -1,4 +1,9 @@
-export type SectionKey = "dashboard" | "inqueries" | "admin" | "attendance";
+export type SectionKey =
+  | "dashboard"
+  | "inqueries"
+  | "admin"
+  | "attendance"
+  | "bookings";
 
 export type AuthUser = {
   id: string;

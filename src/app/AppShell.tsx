@@ -11,6 +11,7 @@ import {
   ClipboardList,
   CalendarClock,
   ShieldCheck,
+  TicketPercent,
 } from "lucide-react";
 
 const sections: {
@@ -34,9 +35,16 @@ const sections: {
       label: "Inqueries",
       icon: <ClipboardList className="h-5 w-5" />,
       items: [
-        { href: "/inqueries/form", label: "New Inquiry" },
-        { href: "/inqueries", label: "All Inqueries" },
-        // { href: "/attendance", label: "Follow-up" },
+        { href: "/inqueries", label: "Inqueries" },
+      ],
+    },
+    {
+      key: "bookings",
+      label: "Bookings",
+      icon: <TicketPercent className="h-5 w-5" />,
+      items: [
+        { href: "/bookings/4-5-stars", label: "4–5 Stars Booking" },
+        { href: "/bookings/3-stars", label: "3 Stars Booking" },
       ],
     },
     {

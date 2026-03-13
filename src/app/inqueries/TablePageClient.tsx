@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
+import { Pencil, Trash2 } from "lucide-react";
 import type { InquiryRow, InquiryFormValues as FormValues } from "@/types";
 
 export default function TablePageClient() {
@@ -23,6 +24,8 @@ export default function TablePageClient() {
   const [search, setSearch] = useState("");
 
   const [loadingExisting, setLoadingExisting] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const {
     register,
@@ -167,6 +170,37 @@ export default function TablePageClient() {
     router.push(`/inqueries?id=${id}`);
   };
 
+  const openDeleteModal = (id: string) => {
+    setDeleteId(id);
+  };
+
+  const cancelDelete = () => {
+    setDeleteId(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    try {
+      setDeleteLoading(true);
+      const res = await fetch(`/api/inquiries/${deleteId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message || "Failed to delete inquiry");
+        return;
+      }
+      toast.success("Inquiry deleted");
+      setDeleteId(null);
+      void fetchInquiries();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete inquiry");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const handleNewClick = () => {
     router.push("/inqueries");
     reset({
@@ -196,8 +230,8 @@ export default function TablePageClient() {
             All submissions from the WhatsApp Name form.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex min-w-0 flex-1 items-center gap-1 rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 sm:min-w-0 sm:flex-initial">
+        <div className="flex sm:flex-col  flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-1 rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
             <span>🔍</span>
             <input
               value={search}
@@ -210,7 +244,7 @@ export default function TablePageClient() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 justify-end sm:justify-start">
+          <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
           <button
             type="button"
             onClick={handleNewClick}
@@ -352,13 +386,24 @@ export default function TablePageClient() {
                     {row.remarks || "-"}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-right sm:px-4">
-                    <button
-                      type="button"
-                      onClick={() => handleEdit(row._id)}
-                      className="inline-flex items-center gap-1 rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-900"
-                    >
-                      ✏️ <span className="hidden sm:inline">Edit</span>
-                    </button>
+                    <div className="inline-flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(row._id)}
+                        className="inline-flex items-center gap-1 rounded-md border border-zinc-300 px-2 py-1 text-[11px] font-medium text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-900"
+                      >
+                        <Pencil className="h-3 w-3" />
+                        <span className="hidden sm:inline">Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openDeleteModal(row._id)}
+                        className="inline-flex items-center gap-1 rounded-md border border-red-300 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/40"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        <span className="hidden sm:inline">Delete</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -530,6 +575,40 @@ export default function TablePageClient() {
           </div>
         </form>
       </div>
+
+      {deleteId && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-4 text-xs shadow-lg dark:border-zinc-800 dark:bg-zinc-950 sm:p-5">
+            <div className="mb-3">
+              <h3 className="mb-1 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                Delete inquiry?
+              </h3>
+              <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                This will permanently remove this inquiry from the list. You
+                can&apos;t undo this action.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={cancelDelete}
+                className="rounded-md border border-zinc-300 px-3 py-1.5 text-[11px] font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                disabled={deleteLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                disabled={deleteLoading}
+                className="rounded-md bg-red-600 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {deleteLoading ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

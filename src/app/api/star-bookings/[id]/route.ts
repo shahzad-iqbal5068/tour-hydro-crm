@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
-import { Inquiry } from "@/models/Inquiry";
+import { StarBooking } from "@/models/StarBooking";
 
 type Context = {
   params: Promise<{ id: string }>;
@@ -8,18 +8,21 @@ type Context = {
 
 export async function GET(_request: NextRequest, context: Context) {
   const { id } = await context.params;
+
   try {
     await connectToDatabase();
-    const inquiry = await Inquiry.findById(id).lean();
-    console.log("inquiry", inquiry);
+    const booking = await StarBooking.findById(id).lean();
 
-    if (!inquiry) {
-      return NextResponse.json({ message: "Inquiry not found" }, { status: 404 });
+    if (!booking) {
+      return NextResponse.json(
+        { message: "Booking not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(inquiry, { status: 200 });
+    return NextResponse.json(booking, { status: 200 });
   } catch (error) {
-    console.error("Error fetching inquiry:", error);
+    console.error("Error fetching star booking:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
@@ -34,28 +37,48 @@ export async function PUT(request: NextRequest, context: Context) {
 
   try {
     const body = await request.json();
-    const { date, shift, whatsappName, remarks } = body;
+    const {
+      time,
+      pax,
+      guestName,
+      phone,
+      collectionAmount = body.collection,
+      paid,
+      balance,
+      deck,
+      remarks,
+      callingRemarks,
+    } = body;
 
     await connectToDatabase();
 
-    const updated = await Inquiry.findByIdAndUpdate(
+    const updated = await StarBooking.findByIdAndUpdate(
       id,
       {
-        date: date ? new Date(date) : undefined,
-        shift,
-        whatsappName,
+        time,
+        pax,
+        guestName,
+        phone,
+        collectionAmount: Number(collectionAmount) ?? 0,
+        paid,
+        balance,
+        deck,
         remarks,
+        callingRemarks,
       },
       { new: true }
     ).lean();
 
     if (!updated) {
-      return NextResponse.json({ message: "Inquiry not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Booking not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
-    console.error("Error updating inquiry:", error);
+    console.error("Error updating star booking:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
@@ -71,18 +94,18 @@ export async function DELETE(_request: NextRequest, context: Context) {
   try {
     await connectToDatabase();
 
-    const deleted = await Inquiry.findByIdAndDelete(id).lean();
+    const deleted = await StarBooking.findByIdAndDelete(id).lean();
 
     if (!deleted) {
       return NextResponse.json(
-        { message: "Inquiry not found" },
+        { message: "Booking not found" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ message: "Inquiry deleted" }, { status: 200 });
+    return NextResponse.json({ message: "Booking deleted" }, { status: 200 });
   } catch (error) {
-    console.error("Error deleting inquiry:", error);
+    console.error("Error deleting star booking:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
@@ -91,5 +114,4 @@ export async function DELETE(_request: NextRequest, context: Context) {
     );
   }
 }
-
 

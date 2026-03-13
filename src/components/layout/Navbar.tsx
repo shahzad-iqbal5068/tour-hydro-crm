@@ -59,8 +59,11 @@ export function Navbar({
         >
           ☰
         </button>
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 text-[11px] font-semibold text-white">
+            HT
+          </div>
         <span className="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-50">
-          Hydro CRM
+           Hydro Tour
         </span>
         <span className="hidden shrink-0 text-xs text-zinc-500 dark:text-zinc-400 md:inline">
           {sectionLabel}
