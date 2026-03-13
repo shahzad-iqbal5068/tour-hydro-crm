@@ -3,14 +3,14 @@
 import { useEffect, useState, type ReactNode } from "react";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Sidebar } from "./components/layout/Sidebar";
-import { Navbar } from "./components/layout/Navbar";
+import { Sidebar } from "../components/layout/Sidebar";
+import { Navbar } from "../components/layout/Navbar";
 import type { SectionKey, AuthUser } from "@/types";
 import {
   LayoutDashboard,
   ClipboardList,
   CalendarClock,
-  Settings2,
+  ShieldCheck,
 } from "lucide-react";
 
 const sections: {
@@ -42,12 +42,17 @@ const sections: {
     {
       key: "admin",
       label: "Admin",
-      icon: <Settings2 className="h-5 w-5" />,
+      icon: <ShieldCheck className="h-5 w-5" />,
       items: [
         { href: "/admin/users", label: "Users" },
-        { href: "/admin/attendance", label: "Attendance" },
-        { href: "/login", label: "Login" },
+        { href: "/admin/attendance", label: "Attendance overview" },
       ],
+    },
+    {
+      key: "attendance",
+      label: "Attendance",
+      icon: <CalendarClock className="h-5 w-5" />,
+      items: [{ href: "/attendance", label: "My Attendance" }],
     },
     
   ];

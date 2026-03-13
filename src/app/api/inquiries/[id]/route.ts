@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Inquiry } from "@/models/Inquiry";
 
-export async function GET(_request: NextRequest, context: any) {
-  const {
-    params: { id },
-  } = context;
+type Context = {
+  params: Promise<{ id: string }>;
+};
 
+export async function GET(_request: NextRequest, context: Context) {
+  const { id } = await context.params;
   try {
     await connectToDatabase();
     const inquiry = await Inquiry.findById(id).lean();
@@ -28,10 +29,8 @@ export async function GET(_request: NextRequest, context: any) {
   }
 }
 
-export async function PUT(request: NextRequest, context: any) {
-  const {
-    params: { id },
-  } = context;
+export async function PUT(request: NextRequest, context: Context) {
+  const { id } = await context.params;
 
   try {
     const body = await request.json();

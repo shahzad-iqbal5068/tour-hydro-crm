@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import AttendanceClient from "./AttendanceClient";
+import AttendanceClient from "@/components/attendance/AttendanceClient";
 
 export const metadata: Metadata = {
-  title: "Attendance | Hydro CRM",
+  title: "My Attendance | Hydro CRM",
   description:
-    "Mark daily attendance with location and photo for Hydro CRM staff.",
+    "Mark your own attendance with photo and location, and review your recent records.",
 };
 
 export default function AttendancePage() {

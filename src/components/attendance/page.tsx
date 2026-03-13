@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import AdminAttendanceClient from "@/components/attendance/AdminAttendanceClient";
+import AdminAttendanceClient from "./AdminAttendanceClient";
 
 export const metadata: Metadata = {
   title: "Admin Attendance | Hydro CRM",
