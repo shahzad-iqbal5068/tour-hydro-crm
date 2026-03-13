@@ -12,6 +12,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      MONGODB_URI: mongodb://localhost:27017/ci
+      JWT_SECRET: ci-jwt-secret-no-production-use
 
     steps:
       - name: Checkout repository
