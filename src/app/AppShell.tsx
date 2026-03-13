@@ -76,12 +76,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
+  // Hydration: read theme from localStorage only after mount to avoid mismatch
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- intentional post-mount sync */
     setMounted(true);
     const stored = window.localStorage.getItem("theme");
     if (stored === "light" || stored === "dark") {
       setTheme(stored);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   useEffect(() => {
