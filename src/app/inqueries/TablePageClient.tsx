@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import type { InquiryRow } from "@/types";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { Toaster, toast } from "react-hot-toast";
+import type { InquiryRow, InquiryFormValues as FormValues } from "@/types";
 
 export default function TablePageClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editingId = searchParams.get("id");
 
   const [rows, setRows] = useState<InquiryRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -17,6 +21,22 @@ export default function TablePageClient() {
   const [limit] = useState(10);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
+
+  const [loadingExisting, setLoadingExisting] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<FormValues>({
+    defaultValues: {
+      date: new Date().toISOString().split("T")[0],
+      shift: "",
+      whatsappName: "",
+      remarks: "",
+    },
+  });
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(total / limit)),
@@ -48,6 +68,7 @@ export default function TablePageClient() {
     } catch (err) {
       console.error(err);
       setError("Failed to load data");
+      toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -58,8 +79,102 @@ export default function TablePageClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sortDate, packageFilter, search]);
 
+  useEffect(() => {
+    const fetchInquiry = async () => {
+      if (!editingId) {
+        reset({
+          date: new Date().toISOString().split("T")[0],
+          shift: "",
+          whatsappName: "",
+          remarks: "",
+        });
+        return;
+      }
+      try {
+        setLoadingExisting(true);
+        const res = await fetch(`/api/inquiries/${editingId}`);
+        if (!res.ok) {
+          throw new Error("Failed to load inquiry");
+        }
+        const data = await res.json();
+        reset({
+          date: data.date ? new Date(data.date).toISOString().slice(0, 10) : "",
+          shift: data.shift || "",
+          whatsappName: data.whatsappName || "",
+          remarks: data.remarks || "",
+        });
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load inquiry");
+      } finally {
+        setLoadingExisting(false);
+      }
+    };
+
+    void fetchInquiry();
+  }, [editingId, reset]);
+
+  const onSubmit = async (values: FormValues) => {
+    const payload = {
+      date: values.date,
+      shift: values.shift,
+      whatsappName: values.whatsappName,
+      remarks: values.remarks,
+    };
+
+    try {
+      const res = await fetch(
+        editingId ? `/api/inquiries/${editingId}` : "/api/inquiries",
+        {
+          method: editingId ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Request failed");
+      }
+
+      const data = await res.json();
+      console.log("Form submitted:", data);
+      toast.success(
+        editingId ? "Inquiry updated successfully" : "Inquiry created successfully"
+      );
+
+      // refresh table
+      void fetchInquiries();
+
+      if (!editingId) {
+        reset({
+          date: new Date().toISOString().split("T")[0],
+          shift: "",
+          whatsappName: "",
+          remarks: "",
+        });
+      } else {
+        router.push("/inqueries");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to save inquiry");
+    }
+  };
+
   const handleEdit = (id: string) => {
-      router.push(`/inqueries/form?id=${id}`);
+    router.push(`/inqueries?id=${id}`);
+  };
+
+  const handleNewClick = () => {
+    router.push("/inqueries");
+    reset({
+      date: new Date().toISOString().split("T")[0],
+      shift: "",
+      whatsappName: "",
+      remarks: "",
+    });
   };
 
   const handlePrint = () => {
@@ -67,8 +182,12 @@ export default function TablePageClient() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto flex max-w-5xl flex-col gap-6 lg:flex-row">
+      <Toaster position="top-right" />
+
+      {/* Table side */}
+      <div className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
             Inquiries
@@ -90,9 +209,11 @@ export default function TablePageClient() {
               className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500 sm:w-40"
             />
           </div>
+
+          <div className="flex flex-wrap items-center gap-2 justify-end sm:justify-start">
           <button
             type="button"
-            onClick={() => router.push("/inqueries/form")}
+            onClick={handleNewClick}
             className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             New Inquiry
@@ -104,10 +225,11 @@ export default function TablePageClient() {
           >
             Print
           </button>
+          </div>
         </div>
-      </div>
+        </div>
 
-      <div className="mb-4 flex flex-wrap items-end gap-3">
+        <div className="mb-4 flex flex-wrap items-end gap-3">
         <div className="min-w-0 flex-1 sm:min-w-[14rem]">
           <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
             WhatsApp Name
@@ -165,9 +287,9 @@ export default function TablePageClient() {
             </button>
           </div>
         </div>
-      </div>
+        </div>
 
-      <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
         <table className="min-w-full text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
@@ -243,9 +365,9 @@ export default function TablePageClient() {
             )}
           </tbody>
         </table>
-      </div>
+        </div>
 
-      <div className="mt-4 flex flex-col gap-3 text-xs text-zinc-600 dark:text-zinc-400 print:hidden sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-4 flex flex-col gap-3 text-xs text-zinc-600 dark:text-zinc-400 print:hidden sm:flex-row sm:items-center sm:justify-between">
         <div>
           Page {page} of {totalPages} &middot; {total} records
         </div>
@@ -267,6 +389,146 @@ export default function TablePageClient() {
             Next
           </button>
         </div>
+      </div>
+      </div>
+
+      {/* Form side */}
+      <div className="w-full shrink-0 rounded-lg border border-zinc-200 bg-white p-4 text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-5 lg:max-w-sm">
+        <h2 className="mb-2 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+          {editingId ? "Edit inquiry" : "New inquiry"}
+        </h2>
+        <p className="mb-4 text-xs text-zinc-600 dark:text-zinc-400">
+          Capture tourist cruise inquiry details, WhatsApp Name, shift and remarks.
+        </p>
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="date"
+                className="mb-1 block text-xs font-medium text-zinc-800 dark:text-zinc-200"
+              >
+                Date
+              </label>
+              <div className="relative">
+                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-400">
+                  📅
+                </span>
+                <input
+                  id="date"
+                  type="date"
+                  className="w-full rounded-md border border-zinc-300 bg-white py-1.5 pl-8 pr-2 text-xs text-zinc-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-black dark:text-zinc-50"
+                  {...register("date", { required: "Date is required" })}
+                />
+              </div>
+              {errors.date && (
+                <p className="mt-1 text-[11px] text-red-500">{errors.date.message}</p>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="shift"
+                className="mb-1 block text-xs font-medium text-zinc-800 dark:text-zinc-200"
+              >
+                Shift
+              </label>
+              <div className="relative">
+                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-400">
+                  🕒
+                </span>
+                <select
+                  id="shift"
+                  className="w-full rounded-md border border-zinc-300 bg-white py-1.5 pl-8 pr-2 text-xs text-zinc-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-black dark:text-zinc-50"
+                  {...register("shift", { required: "Shift is required" })}
+                >
+                  <option value="">Select shift</option>
+                  <option value="morning">Morning</option>
+                  <option value="evening">Evening</option>
+                </select>
+              </div>
+              {errors.shift && (
+                <p className="mt-1 text-[11px] text-red-500">{errors.shift.message}</p>
+              )}
+            </div>
+          </div>
+          <div>
+            <label
+              htmlFor="package"
+              className="mb-1 block text-xs font-medium text-zinc-800 dark:text-zinc-200"
+            >
+              WhatsApp Name
+            </label>
+            <div className="relative">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-400">
+                🛳️
+              </span>
+              <select
+                id="package"
+                className="w-full rounded-md border border-zinc-300 bg-white py-1.5 pl-8 pr-2 text-xs text-zinc-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-black dark:text-zinc-50"
+                {...register("whatsappName", {
+                  required: "WhatsApp Name is required",
+                })}
+              >
+                <option value="">Select WhatsApp Name</option>
+                <option value="dow-cruise-tripn">Dow Cruise Trip </option>
+                <option value="cruise-express">Cruise Express</option>
+                <option value="fun-and-fun">Fun  &amp; Fun</option>
+                <option value="yacht-cruise">Yacht &amp; Cruise</option>
+                <option value="blue-world">Blue World</option>
+                <option value="fun-factory">Fun Factory</option>
+                <option value="dubai-deals">Dubai Deals</option>
+              </select>
+            </div>
+            {errors.whatsappName && (
+              <p className="mt-1 text-[11px] text-red-500">
+                {errors.whatsappName.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <label
+              htmlFor="remarks"
+              className="mb-1 block text-xs font-medium text-zinc-800 dark:text-zinc-200"
+            >
+              Remarks
+            </label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1.5 text-zinc-400">
+                📝
+              </span>
+              <textarea
+                id="remarks"
+                rows={3}
+                className="w-full rounded-md border border-zinc-300 bg-white py-1.5 pl-8 pr-2 text-xs text-zinc-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-black dark:text-zinc-50"
+                placeholder="Type remarks or notes here"
+                {...register("remarks")}
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="submit"
+              disabled={isSubmitting || loadingExisting}
+              className="inline-flex flex-1 items-center justify-center rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            >
+              {isSubmitting || loadingExisting
+                ? editingId
+                  ? "Saving..."
+                  : "Submitting..."
+                : editingId
+                  ? "Save changes"
+                  : "Submit"}
+            </button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={handleNewClick}
+                className="inline-flex items-center justify-center rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-900"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </form>
       </div>
     </div>
   );
