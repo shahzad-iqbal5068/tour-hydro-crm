@@ -1,163 +1,186 @@
 # Hydro CRM
 
-A small Next.js 16 + Tailwind CSS demo app for managing tour bookings with a form and a bookings table.  
-Data is stored in MongoDB via Mongoose and can use either **MongoDB Atlas (cloud)** or a **local MongoDB** instance.
+A CRM for tourist cruise operations: manage inquiries, 4–5 star and 3 star bookings, attendance, and users—with JWT auth, MongoDB, and a responsive dashboard.
 
 ---
 
-## 1. Tech stack
+## Tech stack
 
-- Next.js 16 (App Router, TypeScript)
-- React, React Hook Form
-- Tailwind CSS
-- MongoDB + Mongoose
-- react-hot-toast
+- **Framework:** Next.js 16 (App Router)
+- **UI:** React 19, Tailwind CSS 4
+- **Database:** MongoDB (Mongoose)
+- **Auth:** JWT in cookies, bcrypt for passwords
+- **Forms:** react-hook-form, react-hot-toast
+- **Icons:** Lucide React
 
 ---
 
-## 2. Getting started
+## Features
 
-### 2.1. Install dependencies
+### Dashboard (Home)
+
+- **Stats cards:** Inquiries and Bookings counts from the database.
+- **Period filter:** Today, Weekly, Monthly, Yearly (dropdown).
+- **Bookings breakdown:** In one card: 4–5 Star, 3 Star, and Total.
+- **Layout:** 4 cards in one row on large screens; 2 on tablet; 1 on mobile.
+
+### Inquiries
+
+- **List:** Table with date, shift, WhatsApp name, remarks; filter by WhatsApp name; sort by date; search; pagination; print.
+- **Form:** Same page (side-by-side on desktop): add/edit with date, shift, WhatsApp name, remarks; validation and toasts.
+- **Actions:** Edit (pencil) and Delete (trash) with confirmation modal; API: GET, POST, PUT, DELETE.
+
+### Bookings (4–5 Star & 3 Star)
+
+- **Two sections:** “4–5 Stars Booking” and “3 Stars Booking” in the sidebar.
+- **Table:** Time, Pax, Guest name, Number, Collection, Paid, Balance, Deck, Remarks, Calling remarks; Edit and Delete per row.
+- **Form:** Side panel to add/edit; create/update/delete via `/api/star-bookings` (full CRUD).
+- **Storage:** MongoDB `StarBooking` model; category `"4-5"` or `"3"`.
+
+### Attendance
+
+- **My Attendance:** Check in (camera + optional GPS, photo to Cloudinary), check out; today’s status and live elapsed time; recent history table.
+- **Admin Attendance:** Table of all staff attendance; filters: date, month, year, role; columns: date, name, role, check-in/out, duration, location, photo link.
+
+### Admin – Users
+
+- **User management:** Table of users; add/edit roles (SUPER_ADMIN, ADMIN, MANAGER, CEO, SALES_EXEC, CALL_PERSON).
+- **Layout:** Table and form side-by-side (same as inquiries).
+
+### Auth & profile
+
+- **Login:** Email + password; JWT stored in cookie; redirect to home when authenticated; no guest mode.
+- **Protected routes:** Unauthenticated users are redirected to `/login`.
+- **Profile (navbar):** Avatar, name, email, role; “Change profile image” opens camera modal; capture → upload to Cloudinary → save URL to user; logout in navbar and profile modal.
+
+### UI / UX
+
+- **Theme:** Light/dark toggle in navbar (class-based, no flash).
+- **Sidebar:** Icon bar + expandable sub-sidebar with section links; mobile overlay with burger menu.
+- **Responsive:** Layout and cards adapt for mobile, tablet, and desktop.
+
+---
+
+## Project setup
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm
+- MongoDB (local or Atlas)
+- (Optional) Cloudinary for profile and attendance photos
+
+### 1. Clone and install
 
 ```bash
+git clone <repository-url>
+cd hydro-crm
 pnpm install
 ```
 
-### 2.2. Configure environment variables
+### 2. Environment variables
 
-Environment variables live in `.env.local` (not committed to Git).  
-An example file is provided as `.env.example`.
-
-Copy it:
+Copy the example env and set values:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Then open `.env.local` and choose **one** connection string:
+Edit `.env.local`:
 
-#### Option A – Use MongoDB Atlas (recommended for Vercel)
+| Variable | Description |
+|----------|-------------|
+| `MONGODB_URI` | MongoDB connection string (Atlas or e.g. `mongodb://127.0.0.1:27017/tourhydro`) |
+| `JWT_SECRET` | Secret for signing JWTs (use a long random string in production) |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name (profile/attendance images) |
+| `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | Cloudinary unsigned upload preset |
 
-1. In MongoDB Atlas, create a cluster and a database named `tourhydro` (or any name you prefer).
-2. Create a database user and get the connection string from Atlas.
-3. Put it in `.env.local`:
+See `.env.example` for commented examples.
 
-```bash
-MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-name>.mongodb.net/tourhydro?retryWrites=true&w=majority
-```
-
-This is what you should also configure as the `MONGODB_URI` environment variable in **Vercel project settings → Environment Variables**.
-
-#### Option B – Use local MongoDB for development
-
-Make sure you have MongoDB running locally (for example, `mongod` running on port `27017`).
-
-In `.env.local`:
-
-```bash
-MONGODB_URI=mongodb://127.0.0.1:27017/tourhydro
-```
-
-> **Tip:**  
-> - For **local development**, use the local URL above.  
-> - For **Vercel / production**, switch `MONGODB_URI` to your Atlas URL.  
-> - You do **not** need to change any code – only the value of `MONGODB_URI`.
-
-The app’s database helper (`lib/mongodb.ts`) already reads:
-
-- `process.env.MONGODB_URI`  
-- and falls back to `mongodb://127.0.0.1:27017/tourhydro` if it’s missing.
-
----
-
-## 3. Running the app locally
+### 3. Run locally
 
 ```bash
 pnpm dev
 ```
 
-Then open:
+Open [http://localhost:3000](http://localhost:3000). Log in (first user with the configured super-admin email becomes SUPER_ADMIN).
 
-- `http://localhost:3000/form` – booking form
-- `http://localhost:3000/table` – bookings table
-
----
-
-## 4. Features
-
-- **Sidebar + navbar layout** shared across pages.
-- **Form page** (`/form`):
-  - React Hook Form with validation
-  - Fields: date, shift, name, email, WhatsApp package, remarks
-  - Submits to `/api/bookings` (MongoDB)
-  - Edit mode when opened with `?id=<bookingId>`
-  - Loading state + success/error toasts
-- **Table page** (`/table`):
-  - Fetches bookings from `/api/bookings`
-  - Filter by WhatsApp package
-  - Sort by date (ascending/descending)
-  - Pagination
-  - Edit button opens the same record in `/form`
-  - Print button (`window.print()`)
-
----
-
-## 5. Deploying to Vercel
-
-1. Push the repo to GitHub.
-2. Import the project in Vercel.
-3. In **Vercel → Project → Settings → Environment Variables**, add:
+### 4. Build and start (production)
 
 ```bash
-MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-name>.mongodb.net/tourhydro?retryWrites=true&w=majority
+pnpm build
+pnpm start
 ```
-
-4. Trigger a new deploy.
-
-Vercel will use the Atlas URI, while your local machine can use either Atlas or your local MongoDB by changing `MONGODB_URI` in `.env.local`.
 
 ---
 
-## 6. Switching between Atlas and local
+## Scripts
 
-- **To use Atlas locally**: set `MONGODB_URI` to the Atlas URL in `.env.local`.
-- **To use local MongoDB**: set `MONGODB_URI` to `mongodb://127.0.0.1:27017/tourhydro` in `.env.local`.
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start dev server |
+| `pnpm build` | Production build |
+| `pnpm start` | Start production server |
+| `pnpm lint` | Run ESLint |
 
-You don’t need to comment/uncomment any code – just change the value of `MONGODB_URI` and restart `pnpm dev` (or the Vercel deployment).
+---
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## API overview
 
-## Getting Started
+| Area | Endpoints |
+|------|-----------|
+| **Auth** | `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` |
+| **Profile** | `GET /api/profile`, `PUT /api/profile` (avatar URL, re-issue JWT) |
+| **Inquiries** | `GET /api/inquiries`, `POST /api/inquiries`, `GET /api/inquiries/[id]`, `PUT /api/inquiries/[id]`, `DELETE /api/inquiries/[id]` |
+| **Star bookings** | `GET /api/star-bookings?category=4-5|3`, `POST /api/star-bookings`, `GET/PUT/DELETE /api/star-bookings/[id]` |
+| **Dashboard** | `GET /api/dashboard/stats?period=today|weekly|monthly|yearly` (inquiries + bookings4to5, bookings3, bookingsTotal) |
+| **Attendance** | `GET /api/attendance/mine`, `POST /api/attendance/start`, `POST /api/attendance/end`, `GET /api/attendance/mine/history`, `GET /api/attendance` (admin, with filters) |
+| **Admin users** | `GET /api/admin/users`, `POST /api/admin/users` (create/update) |
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Project structure (main parts)
+
+```
+hydro-crm/
+├── .env.example          # Env template
+├── .github/workflows/    # CI (lint + build)
+├── src/
+│   ├── app/
+│   │   ├── api/          # Route handlers (auth, inquiries, star-bookings, attendance, dashboard, admin)
+│   │   ├── admin/        # Admin users, admin attendance
+│   │   ├── attendance/   # My attendance
+│   │   ├── bookings/     # 4-5 stars, 3 stars
+│   │   ├── inqueries/    # Inquiries table + form
+│   │   ├── login/
+│   │   ├── AppShell.tsx  # Layout, sidebar, navbar, auth guard
+│   │   ├── HomeStats.tsx # Dashboard stats cards + period
+│   │   ├── layout.tsx
+│   │   └── page.tsx      # Home/dashboard
+│   ├── components/
+│   │   ├── layout/       # Sidebar, Navbar, Profile modals
+│   │   ├── attendance/   # AttendanceClient, AdminAttendanceClient
+│   │   └── bookings/     # BookingClient
+│   ├── lib/              # mongodb, auth (JWT)
+│   ├── models/           # User, Inquiry, StarBooking, Attendance
+│   └── types/            # Shared TypeScript types
+└── package.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## CI (GitHub Actions)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Workflow **Next.js CI (pnpm)** runs on:
 
-## Learn More
+- **Push:** `main`, `feature/**`
+- **Pull request:** target branch `main`
 
-To learn more about Next.js, take a look at the following resources:
+Steps: checkout → Node 20 + pnpm cache → `pnpm install --frozen-lockfile` → `pnpm lint` → `pnpm build`.  
+Build uses dummy `MONGODB_URI` and `JWT_SECRET` so it does not need a real database.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private / as per your repository terms.
