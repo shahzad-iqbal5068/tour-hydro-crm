@@ -1,31 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Attendance } from "@/models/Attendance";
-import { verifyToken } from "@/lib/auth";
+import { requirePermission, Permission } from "@/lib/permissions";
 
 export async function GET(request: NextRequest) {
+  const auth = await requirePermission(Permission.VIEW_ALL_ATTENDANCE);
+  if (!auth.ok) return auth.response;
+
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth_token")?.value;
-
-    if (!token) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const jwtUser = verifyToken(token);
-    if (!jwtUser) {
-      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-    }
-
-    // Only admin-like roles can see all attendance
-    if (
-      !["SUPER_ADMIN", "ADMIN", "MANAGER", "CEO"].includes(
-        jwtUser.role.toUpperCase()
-      )
-    ) {
-      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-    }
 
     const { searchParams } = new URL(request.url);
     const date = searchParams.get("date") || undefined;

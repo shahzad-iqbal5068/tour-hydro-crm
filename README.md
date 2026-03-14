@@ -47,11 +47,12 @@ A CRM for tourist cruise operations: manage inquiries, 4–5 star and 3 star boo
 - **User management:** Table of users; add/edit roles (SUPER_ADMIN, ADMIN, MANAGER, CEO, SALES_EXEC, CALL_PERSON).
 - **Layout:** Table and form side-by-side (same as inquiries).
 
-### Auth & profile
+### Permissions (roles)
 
-- **Login:** Email + password; JWT stored in cookie; redirect to home when authenticated; no guest mode.
-- **Protected routes:** Unauthenticated users are redirected to `/login`.
-- **Profile (navbar):** Avatar, name, email, role; “Change profile image” opens camera modal; capture → upload to Cloudinary → save URL to user; logout in navbar and profile modal.
+- **Roles:** SUPER_ADMIN, ADMIN, MANAGER, CEO, SALES_EXEC, CALL_PERSON.
+- **Enforcement:** API routes use `requirePermission(Permission.…)` (e.g. `MANAGE_USERS` for admin users, `VIEW_ALL_ATTENDANCE` for attendance list). UI hides the Admin sidebar section for roles that lack `MANAGE_USERS` or `VIEW_ALL_ATTENDANCE`.
+- **Docs:** See [PERMISSIONS.md](./PERMISSIONS.md) for the full role × permission matrix and how to use permissions in API and UI (creating documents, protecting routes, showing/hiding by role).
+- **Config:** Single source of truth: `src/lib/permissions-config.ts` (client-safe); server helpers in `src/lib/permissions.ts`.
 
 ### UI / UX
 

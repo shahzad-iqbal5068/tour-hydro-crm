@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { AuthUser } from "@/types";
+import { ensureImageUrl } from "@/lib/imageUrl";
 import { toast } from "react-hot-toast";
 
 type ProfileInfoModalProps = {
@@ -48,16 +49,19 @@ export function ProfileInfoModal({
 
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-zinc-900 text-lg font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900">
-            {user.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user.avatarUrl}
-                alt={user.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              initials
-            )}
+            {(() => {
+              const src = ensureImageUrl(user.avatarUrl);
+              return src ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={src}
+                  alt={user.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                initials
+              );
+            })()}
           </div>
           <div className="text-center">
             <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
@@ -112,9 +116,6 @@ export function ProfileImageModal({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
   useEffect(() => {
     // Auto-start camera when modal opens
     void startCamera();
@@ -149,32 +150,21 @@ export function ProfileImageModal({
     setCameraActive(false);
   };
 
-  const uploadToCloudinary = async (file: File | Blob) => {
-    if (!cloudName || !uploadPreset) {
-      toast.error("Cloudinary is not configured");
-      return;
-    }
+  const uploadImage = async (file: File | Blob) => {
     try {
       setUploading(true);
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("upload_preset", uploadPreset);
-
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-      const data = await res.json();
+      const res = await fetch("/api/upload/image", { method: "POST", body: formData });
+      const data = (await res.json()) as { url?: string; message?: string };
       if (!res.ok) {
-        console.error(data);
-        toast.error("Upload failed");
+        toast.error(data.message ?? "Upload failed");
         return;
       }
-      setAvatarUrl(data.secure_url);
-      toast.success("Image uploaded");
+      if (data.url) {
+        setAvatarUrl(data.url);
+        toast.success("Image uploaded");
+      }
     } catch (err) {
       console.error(err);
       toast.error("Upload failed");
@@ -194,7 +184,7 @@ export function ProfileImageModal({
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob((blob) => {
       if (blob) {
-        void uploadToCloudinary(blob);
+        void uploadImage(blob);
       }
     }, "image/jpeg", 0.9);
   };
@@ -242,21 +232,26 @@ export function ProfileImageModal({
         <div className="flex flex-col gap-4 sm:flex-row">
           <div className="flex w-full flex-col items-center gap-3 sm:w-40">
             <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-zinc-900 text-lg font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900">
-              {avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={avatarUrl}
-                  alt={user.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .slice(0, 2)
-                  .toUpperCase()
-              )}
+              {(() => {
+                const src = ensureImageUrl(avatarUrl);
+                return src ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={src}
+                    alt={user.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span>
+                    {user.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </span>
+                );
+              })()}
             </div>
             <div className="text-center text-xs text-zinc-600 dark:text-zinc-400">
               {user.email}

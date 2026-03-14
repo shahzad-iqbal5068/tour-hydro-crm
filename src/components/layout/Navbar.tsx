@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { AuthUser } from "@/types"; // shared app types
+import type { AuthUser } from "@/types";
+import { ensureImageUrl } from "@/lib/imageUrl";
 import { ProfileInfoModal, ProfileImageModal } from "./ProfileModal";
 
 type NavbarProps = {
@@ -47,6 +48,7 @@ export function Navbar({
       .join("")
       .slice(0, 2)
       .toUpperCase() ?? "";
+  const avatarSrc = user ? ensureImageUrl(user.avatarUrl) : undefined;
 
   return (
     <header className="flex min-w-0 items-center justify-between gap-2 border-b border-zinc-200 bg-white px-3 py-3 text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:px-4">
@@ -89,10 +91,10 @@ export function Navbar({
               className="group flex items-center gap-2 rounded-full border border-transparent px-1 py-0.5 text-left hover:border-zinc-300 dark:hover:border-zinc-600"
             >
               <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-zinc-900 text-xs font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900">
-                {user.avatarUrl ? (
+                {avatarSrc ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={user.avatarUrl}
+                    src={avatarSrc}
                     alt={user.name}
                     className="h-full w-full object-cover"
                   />
