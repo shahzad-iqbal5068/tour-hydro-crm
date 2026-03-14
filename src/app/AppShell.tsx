@@ -165,17 +165,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     window.localStorage.setItem("theme", next);
   };
 
-  const visibleSections = useMemo(
-    () =>
-      sections.filter(
-        (s) =>
-          !s.requiredPermissions?.length ||
-          (user && s.requiredPermissions.some((p) => hasPermission(user.role, p)))
-      ),
-    [user]
-  );
+  const { visibleSections, visibleSectionKeys } = useMemo(() => {
+    const list = sections.filter(
+      (s) =>
+        !s.requiredPermissions?.length ||
+        (user && s.requiredPermissions.some((p) => hasPermission(user.role, p)))
+    );
+    return {
+      visibleSections: list,
+      visibleSectionKeys: list.map((s) => s.key).join(","),
+    };
+  }, [user]);
 
-  // Keep sidebar selection in sync with route; only allow selection of visible sections
+  // Keep sidebar selection in sync with route (use stable key so effect doesn't run every render)
   useEffect(() => {
     const matched = sections.find((section) =>
       section.items.some((item) => item.href === pathname)
@@ -183,14 +185,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (!matched) return;
     const isVisible = visibleSections.some((s) => s.key === matched.key);
     if (isVisible && matched.key !== activeSection) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveSection(matched.key);
     } else if (!isVisible && visibleSections.length > 0) {
-      // User is on a route they can't access (e.g. /admin/users); keep selection on first visible section
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveSection(visibleSections[0].key);
     }
-  }, [pathname, activeSection, visibleSections]);
+  }, [pathname, activeSection, visibleSectionKeys]);
 
   const currentSection =
     visibleSections.find((section) => section.key === activeSection) || visibleSections[0];

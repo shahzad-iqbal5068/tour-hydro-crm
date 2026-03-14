@@ -6,7 +6,6 @@ import type { AttendanceRow, Role } from "@/types";
 import { ensureImageUrl } from "@/lib/imageUrl";
 import { useRequirePermission } from "@/hooks/useRequirePermission";
 import { Permission } from "@/lib/permissions-config";
-import { Loader } from "@/components/ui/Loader";
 
 const ROLES: (Role | "ALL")[] = [
   "ALL",
@@ -196,7 +195,7 @@ export default function AdminAttendanceClient() {
             {loading ? (
               <tr>
                 <td colSpan={8} className="px-3 py-8">
-                  <Loader size="lg" label="Loading attendance…" />
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">Loading attendance…</span>
                 </td>
               </tr>
             ) : rows.length === 0 ? (

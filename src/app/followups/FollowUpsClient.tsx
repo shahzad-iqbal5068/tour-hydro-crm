@@ -5,7 +5,6 @@ import { Toaster, toast } from "react-hot-toast";
 import { MessageCircle, CheckCircle, Calendar, ExternalLink, Copy } from "lucide-react";
 import Link from "next/link";
 import { useFollowups } from "@/hooks/api";
-import { Loader } from "@/components/ui/Loader";
 
 function whatsappNumber(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -88,7 +87,7 @@ export default function FollowUpsClient() {
       </div>
 
       {loading ? (
-        <Loader block size="lg" label="Loading follow-ups…" />
+        <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">Loading follow-ups…</p>
       ) : rows.length === 0 ? (
         <div className="rounded-lg border border-dashed border-zinc-300 py-12 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
           No follow-ups for this date. Set a follow-up date on a booking to see it here.

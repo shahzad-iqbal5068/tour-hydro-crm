@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import { Pencil, Trash2, Search, ArrowUpDown, MessageCircle, CheckCircle } from "lucide-react";
 import { useStarBookings, useUsersList } from "@/hooks/api";
-import { Loader } from "@/components/ui/Loader";
 import {
   flexRender,
   getCoreRowModel,
@@ -541,7 +540,7 @@ export default function BookingClient({
               {loading ? (
                 <tr>
                   <td colSpan={table.getAllColumns().length} className="px-3 py-8">
-                    <Loader size="lg" label="Loading bookings…" />
+                    <span className="text-sm text-zinc-500 dark:text-zinc-400">Loading bookings…</span>
                   </td>
                 </tr>
               ) : table.getRowModel().rows.length === 0 ? (
