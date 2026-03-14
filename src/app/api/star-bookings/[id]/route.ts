@@ -51,6 +51,8 @@ export async function PUT(request: NextRequest, context: Context) {
       body.collectionAmount ?? body.collection ?? 0
     );
     const amount = Number.isNaN(collectionAmount) ? 0 : collectionAmount;
+    const followUpDate = body.followUpDate !== undefined ? (body.followUpDate ? new Date(body.followUpDate) : null) : undefined;
+    const followUpNote = body.followUpNote !== undefined ? body.followUpNote : undefined;
 
     await connectToDatabase();
 
@@ -68,6 +70,12 @@ export async function PUT(request: NextRequest, context: Context) {
     };
     if (category && ["4-5", "3"].includes(category)) {
       update.category = category;
+    }
+    if (followUpDate !== undefined) {
+      update.followUpDate = followUpDate;
+    }
+    if (followUpNote !== undefined) {
+      update.followUpNote = followUpNote;
     }
 
     const updated = await StarBooking.findByIdAndUpdate(

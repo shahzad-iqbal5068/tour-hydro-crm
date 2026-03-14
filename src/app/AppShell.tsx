@@ -13,6 +13,7 @@ import {
   CalendarClock,
   ShieldCheck,
   TicketPercent,
+  BellRing,
 } from "lucide-react";
 
 const sections: {
@@ -47,6 +48,14 @@ const sections: {
       icon: <TicketPercent className="h-5 w-5" />,
       items: [
         { href: "/bookings", label: "Bookings" },
+      ],
+    },
+    {
+      key: "followups",
+      label: "Follow-ups",
+      icon: <BellRing className="h-5 w-5" />,
+      items: [
+        { href: "/followups", label: "Follow-ups" },
       ],
     },
     {

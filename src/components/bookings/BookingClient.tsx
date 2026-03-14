@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
-import { Pencil, Trash2, Search, ArrowUpDown } from "lucide-react";
+import { Pencil, Trash2, Search, ArrowUpDown, MessageCircle, CheckCircle } from "lucide-react";
 import {
   flexRender,
   getCoreRowModel,
@@ -32,6 +32,9 @@ type BookingRow = {
   deck?: string;
   remarks?: string;
   callingRemarks?: string;
+  followUpDate?: string | null;
+  followUpSent?: boolean;
+  followUpNote?: string | null;
 };
 
 type BookingFormValues = {
@@ -45,6 +48,8 @@ type BookingFormValues = {
   deck: string;
   remarks: string;
   callingRemarks: string;
+  followUpDate: string;
+  followUpNote: string;
 };
 
 function makeEmptyValues(): BookingFormValues {
@@ -59,6 +64,8 @@ function makeEmptyValues(): BookingFormValues {
     deck: "",
     remarks: "",
     callingRemarks: "",
+    followUpDate: "",
+    followUpNote: "",
   };
 }
 
@@ -102,6 +109,7 @@ export default function BookingClient({
   const [loading, setLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [followUpDoneId, setFollowUpDoneId] = useState<string | null>(null);
   const [globalQuery, setGlobalQuery] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -164,6 +172,8 @@ export default function BookingClient({
       deck: row.deck || "",
       remarks: row.remarks || "",
       callingRemarks: row.callingRemarks || "",
+      followUpDate: row.followUpDate ? new Date(row.followUpDate).toISOString().slice(0, 10) : "",
+      followUpNote: row.followUpNote || "",
     });
     if (TIME_PRESETS.includes(row.time as (typeof TIME_PRESETS)[number])) {
       setTimeMode("preset");
@@ -204,6 +214,8 @@ export default function BookingClient({
       deck: values.deck,
       remarks: values.remarks,
       callingRemarks: values.callingRemarks,
+      followUpDate: values.followUpDate || undefined,
+      followUpNote: values.followUpNote || undefined,
     };
 
     try {
@@ -261,6 +273,35 @@ export default function BookingClient({
     } finally {
       setDeleteLoading(false);
     }
+  };
+
+  const handleFollowUpDone = async (id: string) => {
+    try {
+      setFollowUpDoneId(id);
+      const res = await fetch(`/api/star-bookings/${id}/followup`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message || "Failed to mark follow-up done");
+        return;
+      }
+      toast.success("Follow-up marked done");
+      void loadBookings();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to mark follow-up done");
+    } finally {
+      setFollowUpDoneId(null);
+    }
+  };
+
+  const whatsappNumber = (phone: string) => {
+    const digits = phone.replace(/\D/g, "");
+    if (digits.startsWith("0")) return "971" + digits.slice(1);
+    return digits || "971";
   };
 
   const columns = useMemo<ColumnDef<BookingRow>[]>(
@@ -327,30 +368,59 @@ export default function BookingClient({
       {
         id: "actions",
         header: () => <span className="block text-right">Actions</span>,
-        cell: ({ row }) => (
-          <div className="inline-flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => handleEdit(row.original)}
-              className="inline-flex items-center gap-1 rounded-md border border-zinc-300 px-2 py-1 text-[10px] font-medium text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-900"
-            >
-              <Pencil className="h-3 w-3" />
-              <span className="hidden sm:inline">Edit</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => openDeleteModal(row.original._id)}
-              className="inline-flex items-center gap-1 rounded-md border border-red-300 px-2 py-1 text-[10px] font-medium text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/40"
-            >
-              <Trash2 className="h-3 w-3" />
-              <span className="hidden sm:inline">Delete</span>
-            </button>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const r = row.original;
+          const hasFollowUp = r.followUpDate && !r.followUpSent;
+          const waText = encodeURIComponent(
+            `Hello ${r.guestName}, just following up about your booking`
+          );
+          return (
+            <div className="inline-flex flex-wrap items-center justify-end gap-1.5">
+              <a
+                href={`https://wa.me/${whatsappNumber(r.phone)}?text=${waText}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-md border border-emerald-400 bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-800 hover:bg-emerald-100 dark:border-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-200 dark:hover:bg-emerald-900/50"
+              >
+                <MessageCircle className="h-3 w-3" />
+                <span className="hidden sm:inline">WhatsApp</span>
+              </a>
+              {hasFollowUp && (
+                <button
+                  type="button"
+                  onClick={() => handleFollowUpDone(r._id)}
+                  disabled={followUpDoneId === r._id}
+                  className="inline-flex items-center gap-1 rounded-md border border-blue-300 bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-800 hover:bg-blue-100 disabled:opacity-60 dark:border-blue-700 dark:bg-blue-950/50 dark:text-blue-200 dark:hover:bg-blue-900/50"
+                >
+                  <CheckCircle className="h-3 w-3" />
+                  <span className="hidden sm:inline">
+                    {followUpDoneId === r._id ? "..." : "Follow up done"}
+                  </span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleEdit(r)}
+                className="inline-flex items-center gap-1 rounded-md border border-zinc-300 px-2 py-1 text-[10px] font-medium text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-900"
+              >
+                <Pencil className="h-3 w-3" />
+                {/* <span className="hidden sm:inline">Edit</span> */}
+              </button>
+              <button
+                type="button"
+                onClick={() => openDeleteModal(r._id)}
+                className="inline-flex items-center gap-1 rounded-md border border-red-300 px-2 py-1 text-[10px] font-medium text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/40"
+              >
+                <Trash2 className="h-3 w-3" />
+                {/* <span className="hidden sm:inline">Delete</span> */}
+              </button>
+            </div>
+          );
+        },
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [viewFilter, rows]
+    [viewFilter, rows, followUpDoneId]
   );
 
   const table = useReactTable({
@@ -805,6 +875,33 @@ export default function BookingClient({
               {callingMode === "preset" && (
                 <input type="hidden" {...register("callingRemarks")} />
               )}
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
+                Follow-up date
+              </label>
+              <input
+                type="date"
+                className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-black dark:text-zinc-50"
+                {...register("followUpDate")}
+              />
+              <p className="mt-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+                Reminder date (optional)
+              </p>
+            </div>
+            <div>
+              <label className="mb-1 block text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
+                Follow-up note
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Call again, Send WhatsApp"
+                className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-black dark:text-zinc-50"
+                {...register("followUpNote")}
+              />
             </div>
           </div>
 

@@ -262,7 +262,7 @@ export default function TablePageClient() {
               className="inline-flex items-center gap-1 rounded-md border border-zinc-300 px-2 py-1 text-[11px] font-medium text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-900"
             >
               <Pencil className="h-3 w-3" />
-              <span className="hidden sm:inline">Edit</span>
+              {/* <span className="hidden sm:inline">Edit</span> */}
             </button>
             <button
               type="button"
@@ -270,7 +270,7 @@ export default function TablePageClient() {
               className="inline-flex items-center gap-1 rounded-md border border-red-300 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/40"
             >
               <Trash2 className="h-3 w-3" />
-              <span className="hidden sm:inline">Delete</span>
+              {/* <span className="hidden sm:inline">Delete</span> */}
             </button>
           </div>
         ),

@@ -1,9 +1,10 @@
 export type SectionKey =
   | "dashboard"
   | "inqueries"
+  | "bookings"
+  | "followups"
   | "admin"
-  | "attendance"
-  | "bookings";
+  | "attendance";
 
 export type AuthUser = {
   id: string;

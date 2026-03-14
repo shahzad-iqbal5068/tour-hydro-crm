@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
 type Period = "today" | "weekly" | "monthly" | "yearly";
 
@@ -19,6 +20,21 @@ export default function HomeStats() {
   const [bookingsTotal, setBookingsTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [todayFollowUps, setTodayFollowUps] = useState<{ _id: string; guestName: string; followUpNote?: string }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/followups/today")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setTodayFollowUps(data);
+          toast(`You have ${data.length} follow-up${data.length === 1 ? "" : "s"} today`);
+        } else {
+          setTodayFollowUps([]);
+        }
+      })
+      .catch(() => setTodayFollowUps([]));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,6 +76,21 @@ export default function HomeStats() {
 
   return (
     <div className="space-y-4">
+      {todayFollowUps.length > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+          <h3 className="mb-2 text-sm font-semibold text-amber-900 dark:text-amber-100">
+            Today&apos;s Follow Ups
+          </h3>
+          <ul className="space-y-1 text-xs text-amber-800 dark:text-amber-200">
+            {todayFollowUps.map((b) => (
+              <li key={b._id}>
+                <span className="font-medium">{b.guestName}</span>
+                {b.followUpNote ? ` – ${b.followUpNote}` : ""}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-3">
         <label
           htmlFor="period-select"
