@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { ensureImageUrl } from "@/lib/imageUrl";
+import { Loader } from "@/components/ui/Loader";
 
 type TodayRecord = {
   _id: string;
@@ -306,7 +307,7 @@ export default function AttendanceClient() {
           </div>
           <div className="text-sm font-semibold">
             {loadingToday
-              ? "Loading..."
+              ? <Loader size="sm" inline />
               : status === "none"
               ? "Not started"
               : status === "checked_in"
