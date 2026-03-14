@@ -6,6 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const category = body.category;
+    const date = body.date ? new Date(body.date) : undefined;
     const time = body.time;
     const pax = body.pax;
     const guestName = body.guestName;
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
 
     const booking = await StarBooking.create({
       category,
+      date,
       time,
       pax,
       guestName,

@@ -38,6 +38,7 @@ export async function PUT(request: NextRequest, context: Context) {
   try {
     const body = await request.json();
     const category = body.category;
+    const date = body.date !== undefined ? (body.date ? new Date(body.date) : null) : undefined;
     const time = body.time;
     const pax = body.pax;
     const guestName = body.guestName;
@@ -71,6 +72,9 @@ export async function PUT(request: NextRequest, context: Context) {
     };
     if (category && ["4-5", "3"].includes(category)) {
       update.category = category;
+    }
+    if (date !== undefined) {
+      update.date = date;
     }
     if (followUpDate !== undefined) {
       update.followUpDate = followUpDate;

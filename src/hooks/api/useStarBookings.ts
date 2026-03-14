@@ -6,6 +6,7 @@ import { apiFetcher, apiMutation } from "@/lib/api";
 type StarBookingRow = {
   _id: string;
   category: "4-5" | "3";
+  date?: string | null;
   time: string;
   pax: number;
   guestName: string;
