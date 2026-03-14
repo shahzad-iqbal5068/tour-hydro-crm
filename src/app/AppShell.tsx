@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "../components/layout/Sidebar";
 import { Navbar } from "../components/layout/Navbar";
 import type { SectionKey, AuthUser } from "@/types";
+import { hasPermission, Permission, type PermissionKey } from "@/lib/permissions-config";
 import {
   LayoutDashboard,
   ClipboardList,
   CalendarClock,
   ShieldCheck,
   TicketPercent,
+  BellRing,
 } from "lucide-react";
 
 const sections: {
@@ -19,6 +21,8 @@ const sections: {
   label: string;
   icon: ReactNode;
   items: { href: string; label: string }[];
+  /** Show this section only if user has at least one of these permissions (omit = all roles) */
+  requiredPermissions?: PermissionKey[];
 }[] =
   [
     {
@@ -43,8 +47,15 @@ const sections: {
       label: "Bookings",
       icon: <TicketPercent className="h-5 w-5" />,
       items: [
-        { href: "/bookings/4-5-stars", label: "4–5 Stars Booking" },
-        { href: "/bookings/3-stars", label: "3 Stars Booking" },
+        { href: "/bookings", label: "Bookings" },
+      ],
+    },
+    {
+      key: "followups",
+      label: "Follow-ups",
+      icon: <BellRing className="h-5 w-5" />,
+      items: [
+        { href: "/followups", label: "Follow-ups" },
       ],
     },
     {
@@ -52,9 +63,11 @@ const sections: {
       label: "Admin",
       icon: <ShieldCheck className="h-5 w-5" />,
       items: [
+        { href: "/admin/performance", label: "Performance" },
         { href: "/admin/users", label: "Users" },
         { href: "/admin/attendance", label: "Attendance overview" },
       ],
+      requiredPermissions: [Permission.MANAGE_USERS, Permission.VIEW_ALL_ATTENDANCE],
     },
     {
       key: "attendance",
@@ -76,12 +89,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
+  // Hydration: read theme from localStorage only after mount to avoid mismatch
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- intentional post-mount sync */
     setMounted(true);
     const stored = window.localStorage.getItem("theme");
     if (stored === "light" || stored === "dark") {
       setTheme(stored);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   useEffect(() => {
@@ -149,19 +165,34 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     window.localStorage.setItem("theme", next);
   };
 
-  // Keep sidebar selection in sync with route, but let icon clicks win
+  const { visibleSections, visibleSectionKeys } = useMemo(() => {
+    const list = sections.filter(
+      (s) =>
+        !s.requiredPermissions?.length ||
+        (user && s.requiredPermissions.some((p) => hasPermission(user.role, p)))
+    );
+    return {
+      visibleSections: list,
+      visibleSectionKeys: list.map((s) => s.key).join(","),
+    };
+  }, [user]);
+
+  // Keep sidebar selection in sync with route (use stable key so effect doesn't run every render)
   useEffect(() => {
     const matched = sections.find((section) =>
       section.items.some((item) => item.href === pathname)
     );
-    if (matched && matched.key !== activeSection) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!matched) return;
+    const isVisible = visibleSections.some((s) => s.key === matched.key);
+    if (isVisible && matched.key !== activeSection) {
       setActiveSection(matched.key);
+    } else if (!isVisible && visibleSections.length > 0) {
+      setActiveSection(visibleSections[0].key);
     }
-  }, [pathname, activeSection]);
+  }, [pathname, activeSection, visibleSectionKeys]);
 
   const currentSection =
-    sections.find((section) => section.key === activeSection) || sections[0];
+    visibleSections.find((section) => section.key === activeSection) || visibleSections[0];
 
   if (isAuthPage) {
     return (
@@ -186,7 +217,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-1">
         <Sidebar
-          sections={sections}
+          sections={visibleSections}
           activeSection={activeSection}
           onActiveSectionChange={setActiveSection}
           isMobileOpen={mobileSidebarOpen}

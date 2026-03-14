@@ -37,35 +37,54 @@ export async function PUT(request: NextRequest, context: Context) {
 
   try {
     const body = await request.json();
-    const {
+    const category = body.category;
+    const time = body.time;
+    const pax = body.pax;
+    const guestName = body.guestName;
+    const phone = body.phone;
+    const paid = body.paid;
+    const balance = body.balance;
+    const deck = body.deck;
+    const remarks = body.remarks;
+    const callingRemarks = body.callingRemarks;
+    const collectionAmount = Number(
+      body.collectionAmount ?? body.collection ?? 0
+    );
+    const amount = Number.isNaN(collectionAmount) ? 0 : collectionAmount;
+    const followUpDate = body.followUpDate !== undefined ? (body.followUpDate ? new Date(body.followUpDate) : null) : undefined;
+    const followUpNote = body.followUpNote !== undefined ? body.followUpNote : undefined;
+    const userId = body.userId !== undefined ? body.userId || null : undefined;
+
+    await connectToDatabase();
+
+    const update: Record<string, unknown> = {
       time,
       pax,
       guestName,
       phone,
-      collectionAmount = body.collection,
+      collectionAmount: amount,
       paid,
       balance,
       deck,
       remarks,
       callingRemarks,
-    } = body;
-
-    await connectToDatabase();
+    };
+    if (category && ["4-5", "3"].includes(category)) {
+      update.category = category;
+    }
+    if (followUpDate !== undefined) {
+      update.followUpDate = followUpDate;
+    }
+    if (followUpNote !== undefined) {
+      update.followUpNote = followUpNote;
+    }
+    if (userId !== undefined) {
+      update.userId = userId;
+    }
 
     const updated = await StarBooking.findByIdAndUpdate(
       id,
-      {
-        time,
-        pax,
-        guestName,
-        phone,
-        collectionAmount: Number(collectionAmount) ?? 0,
-        paid,
-        balance,
-        deck,
-        remarks,
-        callingRemarks,
-      },
+      update,
       { new: true }
     ).lean();
 

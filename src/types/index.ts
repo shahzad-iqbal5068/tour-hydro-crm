@@ -1,9 +1,10 @@
 export type SectionKey =
   | "dashboard"
   | "inqueries"
+  | "bookings"
+  | "followups"
   | "admin"
-  | "attendance"
-  | "bookings";
+  | "attendance";
 
 export type AuthUser = {
   id: string;
@@ -36,6 +37,8 @@ export type InquiryRow = {
   shift: string;
   whatsappName: string;
   remarks?: string;
+  name?: string | null;
+  userId?: string | null;
 };
 
 export type InquiryFormValues = {
@@ -43,6 +46,7 @@ export type InquiryFormValues = {
   shift: string;
   whatsappName: string;
   remarks: string;
+  userId: string;
 };
 
 export type LoginValues = {

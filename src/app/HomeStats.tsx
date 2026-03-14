@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-type Period = "today" | "weekly" | "monthly" | "yearly";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "react-hot-toast";
+import { useDashboardStats, useFollowupsToday, type Period } from "@/hooks/api";
 
 const PERIOD_LABELS: Record<Period, string> = {
   today: "Today",
@@ -13,53 +13,40 @@ const PERIOD_LABELS: Record<Period, string> = {
 
 export default function HomeStats() {
   const [period, setPeriod] = useState<Period>("today");
-  const [inquiries, setInquiries] = useState<number | null>(null);
-  const [bookings4to5, setBookings4to5] = useState<number | null>(null);
-  const [bookings3, setBookings3] = useState<number | null>(null);
-  const [bookingsTotal, setBookingsTotal] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: stats, isLoading: loading, error: statsError } = useDashboardStats(period);
+  const { data: todayFollowUps = [] } = useFollowupsToday();
+  const toastedFollowUps = useRef(false);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function fetchStats() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/dashboard/stats?period=${period}`);
-        const data = await res.json();
-        if (!res.ok) {
-          if (!cancelled) setError(data.message || "Failed to load");
-          return;
-        }
-        if (!cancelled) {
-          setInquiries(data.inquiries ?? 0);
-          setBookings4to5(data.bookings4to5 ?? 0);
-          setBookings3(data.bookings3 ?? 0);
-          setBookingsTotal(data.bookingsTotal ?? 0);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError("Failed to load stats");
-          setInquiries(0);
-          setBookings4to5(0);
-          setBookings3(0);
-          setBookingsTotal(0);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+    if (todayFollowUps.length > 0 && !toastedFollowUps.current) {
+      toast(`You have ${todayFollowUps.length} follow-up${todayFollowUps.length === 1 ? "" : "s"} today`);
+      toastedFollowUps.current = true;
     }
+  }, [todayFollowUps.length]);
 
-    void fetchStats();
-    return () => {
-      cancelled = true;
-    };
-  }, [period]);
+  const inquiries = stats?.inquiries ?? 0;
+  const bookings4to5 = stats?.bookings4to5 ?? 0;
+  const bookings3 = stats?.bookings3 ?? 0;
+  const bookingsTotal = stats?.bookingsTotal ?? 0;
+  const error = statsError ? (statsError as Error).message : null;
 
   return (
     <div className="space-y-4">
+      {todayFollowUps.length > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+          <h3 className="mb-2 text-sm font-semibold text-amber-900 dark:text-amber-100">
+            Today&apos;s Follow Ups
+          </h3>
+          <ul className="space-y-1 text-xs text-amber-800 dark:text-amber-200">
+            {todayFollowUps.map((b) => (
+              <li key={b._id}>
+                <span className="font-medium">{b.guestName}</span>
+                {b.followUpNote ? ` – ${b.followUpNote}` : ""}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-3">
         <label
           htmlFor="period-select"
@@ -87,16 +74,14 @@ export default function HomeStats() {
             Inquiries
           </p>
           {loading ? (
-            <p className="mt-2 text-2xl font-semibold text-zinc-400 dark:text-zinc-500">
-              —
-            </p>
+            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>
           ) : error ? (
             <p className="mt-2 text-sm text-red-500 dark:text-red-400">
               {error}
             </p>
           ) : (
             <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-              {inquiries ?? 0}
+              {inquiries}
             </p>
           )}
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -109,7 +94,7 @@ export default function HomeStats() {
             Bookings
           </p>
           {loading ? (
-            <p className="mt-2 text-sm text-zinc-400 dark:text-zinc-500">—</p>
+            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>
           ) : error ? (
             <p className="mt-2 text-sm text-red-500 dark:text-red-400">
               {error}
@@ -121,7 +106,7 @@ export default function HomeStats() {
                   4–5 Star
                 </span>
                 <span className="font-semibold text-zinc-900 dark:text-zinc-50">
-                  {bookings4to5 ?? 0}
+                  {bookings4to5}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -129,7 +114,7 @@ export default function HomeStats() {
                   3 Star
                 </span>
                 <span className="font-semibold text-zinc-900 dark:text-zinc-50">
-                  {bookings3 ?? 0}
+                  {bookings3}
                 </span>
               </div>
               <div className="flex justify-between border-t border-zinc-200 pt-1.5 text-sm dark:border-zinc-700">
@@ -137,7 +122,7 @@ export default function HomeStats() {
                   Total
                 </span>
                 <span className="font-semibold text-zinc-900 dark:text-zinc-50">
-                  {bookingsTotal ?? 0}
+                  {bookingsTotal}
                 </span>
               </div>
             </div>

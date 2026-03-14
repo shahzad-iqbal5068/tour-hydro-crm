@@ -1,0 +1,47 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { hasPermission, Permission, type PermissionKey } from "@/lib/permissions-config";
+
+/**
+ * On mount, fetches current user and redirects to / if they don't have the required permission.
+ * Use on admin-only pages (e.g. Admin Users, Admin Attendance).
+ */
+export function useRequirePermission(permission: PermissionKey): {
+  allowed: boolean;
+  loading: boolean;
+} {
+  const router = useRouter();
+  const [allowed, setAllowed] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function check() {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        if (cancelled) return;
+        const role = data?.user?.role;
+        if (role && hasPermission(role, permission)) {
+          setAllowed(true);
+        } else {
+          router.replace("/");
+        }
+      } catch {
+        if (!cancelled) router.replace("/");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    check();
+    return () => {
+      cancelled = true;
+    };
+  }, [permission, router]);
+
+  return { allowed, loading };
+}

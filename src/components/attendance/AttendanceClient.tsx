@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
+import { ensureImageUrl } from "@/lib/imageUrl";
 
 type TodayRecord = {
   _id: string;
@@ -139,28 +140,17 @@ export default function AttendanceClient() {
     return canvas.toDataURL("image/jpeg", 0.9);
   };
 
-  const uploadToCloudinary = async (dataUrl: string): Promise<string> => {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-    if (!cloudName || !preset) {
-      throw new Error("Cloudinary is not configured");
-    }
+  const uploadImage = async (dataUrl: string): Promise<string> => {
     const blob = await (await fetch(dataUrl)).blob();
     const form = new FormData();
     form.append("file", blob);
-    form.append("upload_preset", preset);
-    const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      {
-        method: "POST",
-        body: form,
-      }
-    );
-    const json = await res.json();
+    const res = await fetch("/api/upload/image", { method: "POST", body: form });
+    const json = (await res.json()) as { url?: string; message?: string };
     if (!res.ok) {
-      throw new Error(json.error?.message || "Upload failed");
+      throw new Error(json.message ?? "Upload failed");
     }
-    return json.secure_url as string;
+    if (!json.url) throw new Error("No image URL returned");
+    return json.url;
   };
 
   const handleLocate = () => {
@@ -197,7 +187,7 @@ export default function AttendanceClient() {
         toast.error("Could not capture photo");
         return;
       }
-      const uploadedUrl = await uploadToCloudinary(dataUrl);
+      const uploadedUrl = await uploadImage(dataUrl);
       setCapturedUrl(uploadedUrl);
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((t) => t.stop());
@@ -316,7 +306,7 @@ export default function AttendanceClient() {
           </div>
           <div className="text-sm font-semibold">
             {loadingToday
-              ? "Loading..."
+              ? "Loading…"
               : status === "none"
               ? "Not started"
               : status === "checked_in"
@@ -396,20 +386,23 @@ export default function AttendanceClient() {
                     {row.location || "—"}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {row.photoUrl ? (
+                    {(() => {
+                      const href = ensureImageUrl(row.photoUrl);
+                      return href ? (
                       <a
-                        href={row.photoUrl}
+                        href={href}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center rounded-md border border-zinc-300 px-2 py-1 text-[11px] text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
                       >
                         View
                       </a>
-                    ) : (
+                      ) : (
                       <span className="text-[11px] text-zinc-400">
                         No photo
                       </span>
-                    )}
+                      );
+                    })()}
                   </td>
                 </tr>
               ))

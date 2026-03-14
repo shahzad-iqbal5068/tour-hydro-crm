@@ -5,7 +5,7 @@ import { Inquiry } from "@/models/Inquiry";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { date, shift, whatsappName, remarks } = body;
+    const { date, shift, whatsappName, remarks, userId } = body;
 
     if (!date || !shift || !whatsappName) {
       return NextResponse.json(
@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
       shift,
       whatsappName,
       remarks,
+      userId: userId || undefined,
     });
 
     return NextResponse.json(inquiry, { status: 201 });
@@ -63,11 +64,22 @@ export async function GET(request: NextRequest) {
       .sort({ date: sortDate === "asc" ? 1 : -1 })
       .skip((page - 1) * limit)
       .limit(limit)
+      .populate("userId", "name")
       .lean();
+
+    const data = inquiries.map((inv) => {
+      const u = inv as unknown as { userId?: { _id: unknown; name: string } | null };
+      const populated = u.userId && typeof u.userId === "object" && "name" in u.userId ? (u.userId as { _id: unknown; name: string }) : null;
+      return {
+        ...u,
+        name: populated?.name ?? null,
+        userId: populated?._id ? String(populated._id) : (u.userId != null ? String(u.userId) : null),
+      };
+    });
 
     return NextResponse.json(
       {
-        data: inquiries,
+        data,
         total,
         page,
         limit,
