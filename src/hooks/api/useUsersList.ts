@@ -12,6 +12,7 @@ export function useUsersList() {
 
   useEffect(() => {
     let cancelled = false;
+    /* eslint-disable-next-line react-hooks/set-state-in-effect -- reset error before fetch */
     setError(null);
     apiFetcher<UserOption[]>("/api/users/list")
       .then((res) => {

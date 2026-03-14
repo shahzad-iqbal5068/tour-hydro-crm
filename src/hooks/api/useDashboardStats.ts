@@ -19,6 +19,7 @@ export function useDashboardStats(period: Period) {
 
   useEffect(() => {
     let cancelled = false;
+    /* eslint-disable-next-line react-hooks/set-state-in-effect -- reset state when period changes before fetch */
     setError(null);
     setIsLoading(true);
     apiFetcher<DashboardStats>(`/api/dashboard/stats?period=${period}`)

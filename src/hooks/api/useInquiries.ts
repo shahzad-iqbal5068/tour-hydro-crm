@@ -95,6 +95,7 @@ export function useInquiry(id: string | null) {
 
   useEffect(() => {
     if (!id) {
+      /* eslint-disable-next-line react-hooks/set-state-in-effect -- clear state when id is null */
       setData(null);
       setIsLoading(false);
       return;

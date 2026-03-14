@@ -185,10 +185,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (!matched) return;
     const isVisible = visibleSections.some((s) => s.key === matched.key);
     if (isVisible && matched.key !== activeSection) {
+      /* eslint-disable-next-line react-hooks/set-state-in-effect -- sync route to sidebar selection */
       setActiveSection(matched.key);
     } else if (!isVisible && visibleSections.length > 0) {
+      /* eslint-disable-next-line react-hooks/set-state-in-effect -- sync route to sidebar selection */
       setActiveSection(visibleSections[0].key);
     }
+    // visibleSectionKeys used intentionally instead of visibleSections to avoid effect on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- visibleSections read from closure when pathname/sectionKeys change
   }, [pathname, activeSection, visibleSectionKeys]);
 
   const currentSection =
