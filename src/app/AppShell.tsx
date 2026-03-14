@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "../components/layout/Sidebar";
 import { Navbar } from "../components/layout/Navbar";
 import type { SectionKey, AuthUser } from "@/types";
+import { hasPermission, Permission, type PermissionKey } from "@/lib/permissions-config";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -19,6 +20,8 @@ const sections: {
   label: string;
   icon: ReactNode;
   items: { href: string; label: string }[];
+  /** Show this section only if user has at least one of these permissions (omit = all roles) */
+  requiredPermissions?: PermissionKey[];
 }[] =
   [
     {
@@ -55,6 +58,7 @@ const sections: {
         { href: "/admin/users", label: "Users" },
         { href: "/admin/attendance", label: "Attendance overview" },
       ],
+      requiredPermissions: [Permission.MANAGE_USERS, Permission.VIEW_ALL_ATTENDANCE],
     },
     {
       key: "attendance",
@@ -152,19 +156,35 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     window.localStorage.setItem("theme", next);
   };
 
-  // Keep sidebar selection in sync with route, but let icon clicks win
+  const visibleSections = useMemo(
+    () =>
+      sections.filter(
+        (s) =>
+          !s.requiredPermissions?.length ||
+          (user && s.requiredPermissions.some((p) => hasPermission(user.role, p)))
+      ),
+    [user]
+  );
+
+  // Keep sidebar selection in sync with route; only allow selection of visible sections
   useEffect(() => {
     const matched = sections.find((section) =>
       section.items.some((item) => item.href === pathname)
     );
-    if (matched && matched.key !== activeSection) {
+    if (!matched) return;
+    const isVisible = visibleSections.some((s) => s.key === matched.key);
+    if (isVisible && matched.key !== activeSection) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveSection(matched.key);
+    } else if (!isVisible && visibleSections.length > 0) {
+      // User is on a route they can't access (e.g. /admin/users); keep selection on first visible section
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveSection(visibleSections[0].key);
     }
-  }, [pathname, activeSection]);
+  }, [pathname, activeSection, visibleSections]);
 
   const currentSection =
-    sections.find((section) => section.key === activeSection) || sections[0];
+    visibleSections.find((section) => section.key === activeSection) || visibleSections[0];
 
   if (isAuthPage) {
     return (
@@ -189,7 +209,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-1">
         <Sidebar
-          sections={sections}
+          sections={visibleSections}
           activeSection={activeSection}
           onActiveSectionChange={setActiveSection}
           isMobileOpen={mobileSidebarOpen}

@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import type { AttendanceRow, Role } from "@/types";
+import { ensureImageUrl } from "@/lib/imageUrl";
+import { useRequirePermission } from "@/hooks/useRequirePermission";
+import { Permission } from "@/lib/permissions-config";
 
 const ROLES: (Role | "ALL")[] = [
   "ALL",
@@ -15,6 +18,7 @@ const ROLES: (Role | "ALL")[] = [
 ];
 
 export default function AdminAttendanceClient() {
+  const { allowed, loading: authLoading } = useRequirePermission(Permission.VIEW_ALL_ATTENDANCE);
   const [rows, setRows] = useState<AttendanceRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState<string>("");
@@ -72,6 +76,17 @@ export default function AdminAttendanceClient() {
     const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
     return `${hours}h ${minutes}m`;
   };
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-[200px] items-center justify-center text-sm text-zinc-500 dark:text-zinc-400">
+        Checking access...
+      </div>
+    );
+  }
+  if (!allowed) {
+    return null;
+  }
 
   return (
     <div className="mx-auto max-w-6xl rounded-lg border border-zinc-200 bg-white p-4 text-xs shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
@@ -223,18 +238,21 @@ export default function AdminAttendanceClient() {
                     {row.location || "—"}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {row.photoUrl ? (
+                    {(() => {
+                      const href = ensureImageUrl(row.photoUrl);
+                      return href ? (
                       <a
-                        href={row.photoUrl}
+                        href={href}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center rounded-md border border-zinc-300 px-2 py-1 text-[11px] text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
                       >
                         View
                       </a>
-                    ) : (
+                      ) : (
                       <span className="text-[11px] text-zinc-400">No photo</span>
-                    )}
+                      );
+                    })()}
                   </td>
                 </tr>
               ))

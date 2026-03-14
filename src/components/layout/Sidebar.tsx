@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import type { SectionKey } from "@/types";
 
@@ -27,7 +27,6 @@ export function Sidebar({
   isMobileOpen = false,
   onCloseMobile,
 }: SidebarProps) {
-  const router = useRouter();
   const pathname = usePathname();
 
   const currentSection =
@@ -57,27 +56,29 @@ export function Sidebar({
               Sections
             </div>
             <nav className="flex gap-3 px-4 py-3">
-              {sections.map((section) => (
-                <button
-                  key={section.key}
-                  type="button"
-                  onClick={() => {
-                    onActiveSectionChange(section.key);
-                    const firstItem = section.items[0];
-                    if (firstItem) {
-                      router.push(firstItem.href);
-                    }
-                  }}
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg border text-zinc-600 dark:text-zinc-200 ${
-                    currentSection.key === section.key
-                      ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
-                      : "border-transparent bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                  }`}
-                  aria-label={section.label}
-                >
-                  {section.icon}
-                </button>
-              ))}
+              {sections.map((section) => {
+                const firstItem = section.items[0];
+                const isActive = currentSection.key === section.key;
+                return firstItem ? (
+                  <Link
+                    key={section.key}
+                    href={firstItem.href}
+                    prefetch={false}
+                    onClick={() => {
+                      onActiveSectionChange(section.key);
+                      onCloseMobile?.();
+                    }}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg border text-zinc-600 dark:text-zinc-200 ${
+                      isActive
+                        ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
+                        : "border-transparent bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                    }`}
+                    aria-label={section.label}
+                  >
+                    {section.icon}
+                  </Link>
+                ) : null;
+              })}
             </nav>
             <div className="mt-1 border-t border-zinc-200 px-4 pt-3 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
               {currentSection.label}
@@ -115,27 +116,26 @@ export function Sidebar({
       <aside className="hidden w-16 flex-col border-r border-zinc-200 bg-white py-4 text-xs shadow-sm dark:border-zinc-800 dark:bg-zinc-950 md:flex">
         {/* Sidebar icons */}
         <nav className="flex flex-1 flex-col items-center gap-4">
-          {sections.map((section) => (
-            <button
-              key={section.key}
-              type="button"
-              onClick={() => {
-                onActiveSectionChange(section.key);
-                const firstItem = section.items[0];
-                if (firstItem) {
-                  router.push(firstItem.href);
-                }
-              }}
-              className={`flex h-9 w-9 items-center justify-center rounded-xl border text-zinc-600 dark:text-zinc-200 transition-colors ${
-                currentSection.key === section.key
-                  ? "border-transparent bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-sm dark:from-sky-400 dark:to-indigo-500"
-                  : "border-transparent bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-              }`}
-              aria-label={section.label}
-            >
-              {section.icon}
-            </button>
-          ))}
+          {sections.map((section) => {
+            const firstItem = section.items[0];
+            const isActive = currentSection.key === section.key;
+            return firstItem ? (
+              <Link
+                key={section.key}
+                href={firstItem.href}
+                prefetch={false}
+                onClick={() => onActiveSectionChange(section.key)}
+                className={`flex h-9 w-9 items-center justify-center rounded-xl border text-zinc-600 dark:text-zinc-200 transition-colors ${
+                  isActive
+                    ? "border-transparent bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-sm dark:from-sky-400 dark:to-indigo-500"
+                    : "border-transparent bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                }`}
+                aria-label={section.label}
+              >
+                {section.icon}
+              </Link>
+            ) : null;
+          })}
         </nav>
       </aside>
 
