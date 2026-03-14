@@ -12,6 +12,9 @@ export interface IStarBooking extends Document {
   deck?: string;
   remarks?: string;
   callingRemarks?: string;
+  followUpDate?: Date;
+  followUpSent: boolean;
+  followUpNote?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +36,9 @@ const StarBookingSchema = new Schema<IStarBooking>(
     deck: { type: String },
     remarks: { type: String },
     callingRemarks: { type: String },
+    followUpDate: { type: Date },
+    followUpSent: { type: Boolean, default: false },
+    followUpNote: { type: String },
   },
   { timestamps: true }
 );
