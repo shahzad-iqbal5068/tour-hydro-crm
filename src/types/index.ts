@@ -36,6 +36,8 @@ export type InquiryRow = {
   shift: string;
   whatsappName: string;
   remarks?: string;
+  name?: string | null;
+  userId?: string | null;
 };
 
 export type InquiryFormValues = {
@@ -43,6 +45,7 @@ export type InquiryFormValues = {
   shift: string;
   whatsappName: string;
   remarks: string;
+  userId: string;
 };
 
 export type LoginValues = {
