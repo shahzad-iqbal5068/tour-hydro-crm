@@ -51,7 +51,10 @@ export function useStarBookings(category?: "4-5" | "3" | "all") {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Record<string, unknown> }) =>
+    mutationFn: ({
+      id,
+      body,
+    }: { id: string; body: Record<string, unknown> }) =>
       apiMutation<StarBookingRow>(`/api/star-bookings/${id}`, "PUT", body),
     onSuccess: () => invalidate(),
   });
@@ -64,7 +67,11 @@ export function useStarBookings(category?: "4-5" | "3" | "all") {
 
   const followUpDoneMutation = useMutation({
     mutationFn: (id: string) =>
-      apiMutation<StarBookingRow>(`/api/star-bookings/${id}/followup`, "PUT", {}),
+      apiMutation<StarBookingRow>(
+        `/api/star-bookings/${id}/followup`,
+        "PUT",
+        {}
+      ),
     onSuccess: () => invalidate(),
   });
 

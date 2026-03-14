@@ -21,16 +21,25 @@ export function useInquiries() {
     },
   });
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: queryKeys.inquiries() });
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: queryKeys.inquiries() });
 
   const createMutation = useMutation({
-    mutationFn: (body: Partial<InquiryFormValues> & { date: string; shift: string; whatsappName: string }) =>
-      apiMutation<InquiryRow>("/api/inquiries", "POST", body),
+    mutationFn: (
+      body: Partial<InquiryFormValues> & {
+        date: string;
+        shift: string;
+        whatsappName: string;
+      }
+    ) => apiMutation<InquiryRow>("/api/inquiries", "POST", body),
     onSuccess: () => invalidate(),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Partial<InquiryFormValues> }) =>
+    mutationFn: ({
+      id,
+      body,
+    }: { id: string; body: Partial<InquiryFormValues> }) =>
       apiMutation<InquiryRow>(`/api/inquiries/${id}`, "PUT", body),
     onSuccess: () => invalidate(),
   });

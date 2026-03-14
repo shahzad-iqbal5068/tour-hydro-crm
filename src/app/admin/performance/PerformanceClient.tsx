@@ -60,6 +60,7 @@ export default function PerformanceClient() {
 
   useEffect(() => {
     let cancelled = false;
+    /* eslint-disable-next-line react-hooks/set-state-in-effect -- reset before fetch when range changes */
     setLoading(true);
     setError(null);
     fetch(`/api/admin/performance?range=${range}`)

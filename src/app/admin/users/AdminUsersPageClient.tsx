@@ -5,8 +5,8 @@ import { Toaster, toast } from "react-hot-toast";
 import { Eye, EyeOff, Copy, RefreshCw } from "lucide-react";
 import type { Role, UserRow } from "@/types";
 import { useRequirePermission } from "@/hooks/useRequirePermission";
-import { Loader } from "@/components/ui/Loader";
 import { Permission } from "@/lib/permissions-config";
+import { Loader } from "@/components/ui/Loader";
 
 const ROLES: Role[] = [
   "SUPER_ADMIN",
