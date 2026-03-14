@@ -14,13 +14,19 @@ import {
   ShieldCheck,
   TicketPercent,
   BellRing,
+  Home,
+  UsersRound,
+  TrendingUp,
+  Users,
+  ClipboardCheck,
+  CalendarCheck,
 } from "lucide-react";
 
 const sections: {
   key: SectionKey;
   label: string;
   icon: ReactNode;
-  items: { href: string; label: string }[];
+  items: { href: string; label: string; icon?: ReactNode }[];
   /** Show this section only if user has at least one of these permissions (omit = all roles) */
   requiredPermissions?: PermissionKey[];
 }[] =
@@ -30,8 +36,7 @@ const sections: {
       label: "Dashboard",
       icon: <LayoutDashboard className="h-5 w-5" />,
       items: [
-        { href: "/", label: "Home" },
-        // { href: "/table", label: "Overview" },
+        { href: "/", label: "Home", icon: <Home className="h-4 w-4" /> },
       ],
     },
     {
@@ -39,7 +44,7 @@ const sections: {
       label: "Inqueries",
       icon: <ClipboardList className="h-5 w-5" />,
       items: [
-        { href: "/inqueries", label: "Inqueries" },
+        { href: "/inqueries", label: "Inqueries", icon: <ClipboardList className="h-4 w-4" /> },
       ],
     },
     {
@@ -47,8 +52,8 @@ const sections: {
       label: "Bookings",
       icon: <TicketPercent className="h-5 w-5" />,
       items: [
-        { href: "/bookings", label: "Bookings" },
-        { href: "/bookings/group", label: "Group bookings" },
+        { href: "/bookings", label: "Bookings", icon: <TicketPercent className="h-4 w-4" /> },
+        { href: "/bookings/group", label: "Group bookings", icon: <UsersRound className="h-4 w-4" /> },
       ],
     },
     {
@@ -56,7 +61,7 @@ const sections: {
       label: "Follow-ups",
       icon: <BellRing className="h-5 w-5" />,
       items: [
-        { href: "/followups", label: "Follow-ups" },
+        { href: "/followups", label: "Follow-ups", icon: <BellRing className="h-4 w-4" /> },
       ],
     },
     {
@@ -64,9 +69,9 @@ const sections: {
       label: "Admin",
       icon: <ShieldCheck className="h-5 w-5" />,
       items: [
-        { href: "/admin/performance", label: "Performance" },
-        { href: "/admin/users", label: "Users" },
-        { href: "/admin/attendance", label: "Attendance overview" },
+        { href: "/admin/performance", label: "Performance", icon: <TrendingUp className="h-4 w-4" /> },
+        { href: "/admin/users", label: "Users", icon: <Users className="h-4 w-4" /> },
+        { href: "/admin/attendance", label: "Attendance overview", icon: <ClipboardCheck className="h-4 w-4" /> },
       ],
       requiredPermissions: [Permission.MANAGE_USERS, Permission.VIEW_ALL_ATTENDANCE],
     },
@@ -74,9 +79,8 @@ const sections: {
       key: "attendance",
       label: "Attendance",
       icon: <CalendarClock className="h-5 w-5" />,
-      items: [{ href: "/attendance", label: "My Attendance" }],
+      items: [{ href: "/attendance", label: "My Attendance", icon: <CalendarCheck className="h-4 w-4" /> }],
     },
-    
   ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
