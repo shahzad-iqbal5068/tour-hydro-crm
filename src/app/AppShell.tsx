@@ -46,8 +46,7 @@ const sections: {
       label: "Bookings",
       icon: <TicketPercent className="h-5 w-5" />,
       items: [
-        { href: "/bookings/4-5-stars", label: "4–5 Stars Booking" },
-        { href: "/bookings/3-stars", label: "3 Stars Booking" },
+        { href: "/bookings", label: "Bookings" },
       ],
     },
     {

@@ -5,19 +5,20 @@ import { StarBooking } from "@/models/StarBooking";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const {
-      category,
-      time,
-      pax,
-      guestName,
-      phone,
-      collectionAmount = body.collection,
-      paid,
-      balance,
-      deck,
-      remarks,
-      callingRemarks,
-    } = body;
+    const category = body.category;
+    const time = body.time;
+    const pax = body.pax;
+    const guestName = body.guestName;
+    const phone = body.phone;
+    const paid = body.paid;
+    const balance = body.balance;
+    const deck = body.deck;
+    const remarks = body.remarks;
+    const callingRemarks = body.callingRemarks;
+    const collectionAmount = Number(
+      body.collectionAmount ?? body.collection ?? 0
+    );
+    const amount = Number.isNaN(collectionAmount) ? 0 : collectionAmount;
 
     if (!category || !["4-5", "3"].includes(category)) {
       return NextResponse.json(
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
       pax,
       guestName,
       phone,
-      collectionAmount: Number(collectionAmount) ?? 0,
+      collectionAmount: amount,
       paid,
       balance,
       deck,
@@ -66,16 +67,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
 
-    if (!category || !["4-5", "3"].includes(category)) {
-      return NextResponse.json(
-        { message: "Valid category (4-5 or 3) query param is required" },
-        { status: 400 }
-      );
-    }
-
     await connectToDatabase();
 
-    const bookings = await StarBooking.find({ category })
+    const query = category && ["4-5", "3"].includes(category)
+      ? { category }
+      : {};
+
+    const bookings = await StarBooking.find(query)
       .sort({ createdAt: -1 })
       .lean();
 

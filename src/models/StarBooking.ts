@@ -27,7 +27,7 @@ const StarBookingSchema = new Schema<IStarBooking>(
     pax: { type: Number, required: true },
     guestName: { type: String, required: true },
     phone: { type: String, required: true },
-    collectionAmount: { type: Number, required: true },
+    collectionAmount: { type: Number, required: true, default: 0 },
     paid: { type: Number, required: true },
     balance: { type: Number, required: true },
     deck: { type: String },
@@ -37,7 +37,11 @@ const StarBookingSchema = new Schema<IStarBooking>(
   { timestamps: true }
 );
 
+// Use current schema: clear cached model so old "collection" path is not required (e.g. after deploy or schema change)
+if (mongoose.models.StarBooking) {
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+  delete mongoose.models.StarBooking;
+}
 export const StarBooking: Model<IStarBooking> =
-  mongoose.models.StarBooking ||
   mongoose.model<IStarBooking>("StarBooking", StarBookingSchema);
 

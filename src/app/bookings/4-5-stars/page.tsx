@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import BookingClient from "@/components/bookings/BookingClient";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "4–5 Stars Booking | Hydro CRM",
@@ -8,6 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default function FourFiveStarsBookingPage() {
-  return <BookingClient variant="4-5" />;
+  redirect("/bookings");
 }
 
