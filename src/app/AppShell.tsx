@@ -48,6 +48,7 @@ const sections: {
       icon: <TicketPercent className="h-5 w-5" />,
       items: [
         { href: "/bookings", label: "Bookings" },
+        { href: "/bookings/group", label: "Group bookings" },
       ],
     },
     {

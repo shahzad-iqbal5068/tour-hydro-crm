@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Trash2, Search, ArrowUpDown, MessageCircle, CheckCircle } from "lucide-react";
+import { Pencil, Trash2, Search, ArrowUpDown, MessageCircle, CheckCircle ,Star } from "lucide-react";
 import {
   flexRender,
   getCoreRowModel,
@@ -272,7 +272,7 @@ export default function BookingTable({
               onClick={() => onViewFilterChange("all")}
               className={`rounded px-3 py-1.5 text-[11px] font-medium ${
                 viewFilter === "all"
-                  ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-950 dark:text-zinc-50"
+                  ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600 dark:text-white"
                   : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
               }`}
             >
@@ -281,24 +281,25 @@ export default function BookingTable({
             <button
               type="button"
               onClick={() => onViewFilterChange("4-5")}
-              className={`rounded px-3 py-1.5 text-[11px] font-medium ${
+              className={`flex items-center gap-1 rounded px-2 py-1.5 text-[11px] font-medium ${
                 viewFilter === "4-5"
-                  ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-950 dark:text-zinc-50"
+                  ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600 dark:text-white"
                   : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
               }`}
             >
-              4–5 Star
+              4–5<Star className="h-3 w-3 fill-blue-400" />
             </button>
             <button
               type="button"
               onClick={() => onViewFilterChange("3")}
-              className={`rounded px-3 py-1.5 text-[11px] font-medium ${
+              className={`flex items-center gap-1 rounded px-2 py-1.5 text-[11px] font-medium ${
                 viewFilter === "3"
-                  ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-950 dark:text-zinc-50"
+                  ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600 dark:text-white"
                   : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
               }`}
             >
-              3 Star
+              3<Star className="h-3 w-3 fill-green-400" />
+              
             </button>
           </div>
           <button
@@ -312,7 +313,7 @@ export default function BookingTable({
       </div>
 
       {/* Filters: search, deck, date */}
-      <div className="mb-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-3 max-w-md grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <div className="relative sm:col-span-2 lg:col-span-2">
           <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
           <input
