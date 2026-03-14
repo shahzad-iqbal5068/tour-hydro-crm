@@ -2,6 +2,7 @@ import mongoose, { Schema, Model, Document } from "mongoose";
 
 export interface IStarBooking extends Document {
   category: "4-5" | "3";
+  date?: Date;
   time: string;
   pax: number;
   guestName: string;
@@ -27,6 +28,7 @@ const StarBookingSchema = new Schema<IStarBooking>(
       enum: ["4-5", "3"],
       required: true,
     },
+    date: { type: Date },
     time: { type: String, required: true },
     pax: { type: Number, required: true },
     guestName: { type: String, required: true },
