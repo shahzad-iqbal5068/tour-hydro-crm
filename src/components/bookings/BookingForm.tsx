@@ -157,7 +157,7 @@ export default function BookingForm({
             <span
               className={`block rounded px-2.5 py-1 text-[11px] font-medium transition-colors ${
                 formCategory === "4-5"
-                  ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-950 dark:text-zinc-50"
+                  ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600 dark:text-white"
                   : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
               }`}
             >
@@ -176,7 +176,9 @@ export default function BookingForm({
             <span
               className={`block rounded px-2.5 py-1 text-[11px] font-medium transition-colors ${
                 formCategory === "3"
-                  ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-950 dark:text-zinc-50"
+                  ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600 dark:text-white"
+                  // ? "bg-blue-600 text-white shadow-sm"
+
                   : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
               }`}
             >
