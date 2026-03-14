@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import type { AttendanceRow, Role } from "@/types";
 import { ensureImageUrl } from "@/lib/imageUrl";
+import { Loader } from "@/components/ui/Loader";
 import { useRequirePermission } from "@/hooks/useRequirePermission";
 import { Permission } from "@/lib/permissions-config";
 
@@ -194,11 +195,8 @@ export default function AdminAttendanceClient() {
           <tbody>
             {loading ? (
               <tr>
-                <td
-                  colSpan={8}
-                  className="px-3 py-6 text-center text-sm text-zinc-500 dark:text-zinc-400"
-                >
-                  Loading attendance...
+                <td colSpan={8} className="px-3 py-8">
+                  <Loader size="lg" label="Loading attendance…" />
                 </td>
               </tr>
             ) : rows.length === 0 ? (

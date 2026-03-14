@@ -1,9 +1,11 @@
  "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import { Pencil, Trash2, Search, ArrowUpDown, MessageCircle, CheckCircle } from "lucide-react";
+import { useStarBookings } from "@/hooks/api";
+import { Loader } from "@/components/ui/Loader";
 import {
   flexRender,
   getCoreRowModel,
@@ -104,12 +106,19 @@ export default function BookingClient({
 }) {
   const [viewFilter, setViewFilter] = useState<ViewFilter>(initialVariant);
   const [formCategory, setFormCategory] = useState<BookingVariant>("4-5");
-  const [rows, setRows] = useState<BookingRow[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [followUpDoneId, setFollowUpDoneId] = useState<string | null>(null);
+
+  const {
+    data: rows,
+    isLoading: loading,
+    createMutation,
+    updateMutation,
+    deleteMutation,
+    followUpDoneMutation,
+  } = useStarBookings(viewFilter === "all" ? "all" : viewFilter);
+  const deleteLoading = deleteMutation.isPending;
+  const followUpDoneId = followUpDoneMutation.isPending ? followUpDoneMutation.variables ?? null : null;
   const [globalQuery, setGlobalQuery] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -129,33 +138,6 @@ export default function BookingClient({
   });
 
   const isEditing = Boolean(selectedId);
-
-  const loadBookings = async () => {
-    try {
-      setLoading(true);
-      const url =
-        viewFilter === "all"
-          ? "/api/star-bookings"
-          : `/api/star-bookings?category=${viewFilter}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message || "Failed to load bookings");
-        return;
-      }
-      setRows(data.data || []);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load bookings");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadBookings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewFilter]);
 
   const handleEdit = (row: BookingRow) => {
     setSelectedId(row._id);
@@ -219,25 +201,15 @@ export default function BookingClient({
     };
 
     try {
-      const res = await fetch(
-        selectedId ? `/api/star-bookings/${selectedId}` : "/api/star-bookings",
-        {
-          method: selectedId ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message || "Failed to save booking");
-        return;
+      if (selectedId) {
+        await updateMutation.mutateAsync({ id: selectedId, body: payload });
+      } else {
+        await createMutation.mutateAsync(payload);
       }
-
       toast.success(isEditing ? "Booking updated" : "Booking added");
       setSelectedId(null);
       reset(makeEmptyValues());
       setFormCategory(viewFilter === "all" ? "4-5" : viewFilter);
-      void loadBookings();
     } catch (err) {
       console.error(err);
       toast.error("Failed to save booking");
@@ -255,46 +227,22 @@ export default function BookingClient({
   const confirmDelete = async () => {
     if (!deleteId) return;
     try {
-      setDeleteLoading(true);
-      const res = await fetch(`/api/star-bookings/${deleteId}`, {
-        method: "DELETE",
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message || "Failed to delete booking");
-        return;
-      }
+      await deleteMutation.mutateAsync(deleteId);
       toast.success("Booking deleted");
       setDeleteId(null);
-      void loadBookings();
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete booking");
-    } finally {
-      setDeleteLoading(false);
     }
   };
 
   const handleFollowUpDone = async (id: string) => {
     try {
-      setFollowUpDoneId(id);
-      const res = await fetch(`/api/star-bookings/${id}/followup`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message || "Failed to mark follow-up done");
-        return;
-      }
+      await followUpDoneMutation.mutateAsync(id);
       toast.success("Follow-up marked done");
-      void loadBookings();
     } catch (err) {
       console.error(err);
       toast.error("Failed to mark follow-up done");
-    } finally {
-      setFollowUpDoneId(null);
     }
   };
 
@@ -585,11 +533,8 @@ export default function BookingClient({
             <tbody>
               {loading ? (
                 <tr>
-                  <td
-                    colSpan={table.getAllColumns().length}
-                    className="px-3 py-6 text-center text-xs text-zinc-500 dark:text-zinc-400"
-                  >
-                    Loading bookings...
+                  <td colSpan={table.getAllColumns().length} className="px-3 py-8">
+                    <Loader size="lg" label="Loading bookings…" />
                   </td>
                 </tr>
               ) : table.getRowModel().rows.length === 0 ? (

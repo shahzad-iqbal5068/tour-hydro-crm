@@ -1,20 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { MessageCircle, CheckCircle, Calendar, ExternalLink, Copy } from "lucide-react";
 import Link from "next/link";
-
-type FollowUpRow = {
-  _id: string;
-  category: "4-5" | "3";
-  time: string;
-  guestName: string;
-  phone: string;
-  followUpDate?: string | null;
-  followUpNote?: string | null;
-  followUpSent?: boolean;
-};
+import { useFollowups } from "@/hooks/api";
+import { Loader } from "@/components/ui/Loader";
 
 function whatsappNumber(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -30,56 +21,17 @@ export default function FollowUpsClient() {
     return d.toISOString().slice(0, 10);
   });
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
-  const [rows, setRows] = useState<FollowUpRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [doneId, setDoneId] = useState<string | null>(null);
 
-  const loadFollowUps = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({ date });
-      if (categoryFilter !== "all") params.set("category", categoryFilter);
-      const res = await fetch(`/api/followups?${params.toString()}`);
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message || "Failed to load follow-ups");
-        setRows([]);
-        return;
-      }
-      setRows(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load follow-ups");
-      setRows([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadFollowUps();
-  }, [date, categoryFilter]);
+  const { data: rows, isLoading: loading, followUpDoneMutation } = useFollowups(date, categoryFilter);
+  const doneId = followUpDoneMutation.isPending ? followUpDoneMutation.variables : null;
 
   const handleFollowUpDone = async (id: string) => {
     try {
-      setDoneId(id);
-      const res = await fetch(`/api/star-bookings/${id}/followup`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message || "Failed to mark follow-up done");
-        return;
-      }
+      await followUpDoneMutation.mutateAsync(id);
       toast.success("Follow-up marked done");
-      void loadFollowUps();
     } catch (err) {
       console.error(err);
       toast.error("Failed to mark follow-up done");
-    } finally {
-      setDoneId(null);
     }
   };
 
@@ -136,9 +88,7 @@ export default function FollowUpsClient() {
       </div>
 
       {loading ? (
-        <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-          Loading...
-        </div>
+        <Loader block size="lg" label="Loading follow-ups…" />
       ) : rows.length === 0 ? (
         <div className="rounded-lg border border-dashed border-zinc-300 py-12 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
           No follow-ups for this date. Set a follow-up date on a booking to see it here.
@@ -196,7 +146,6 @@ export default function FollowUpsClient() {
                         className="inline-flex items-center gap-1 rounded-md border border-emerald-400 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800 hover:bg-emerald-100 dark:border-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-200 dark:hover:bg-emerald-900/50"
                       >
                         <MessageCircle className="h-3.5 w-3.5" />
-                        Send WhatsApp
                       </a>
                       <button
                         type="button"
@@ -205,14 +154,13 @@ export default function FollowUpsClient() {
                         className="inline-flex items-center gap-1 rounded-md border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-800 hover:bg-blue-100 disabled:opacity-60 dark:border-blue-700 dark:bg-blue-950/50 dark:text-blue-200 dark:hover:bg-blue-900/50"
                       >
                         <CheckCircle className="h-3.5 w-3.5" />
-                        {doneId === row._id ? "..." : "Follow up done"}
+                        {/* {doneId === row._id ? "..." : "Follow up done"} */}
                       </button>
                       <Link
                         href="/bookings"
                         className="inline-flex items-center gap-1 rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
-                        Bookings
                       </Link>
                     </div>
                   </td>

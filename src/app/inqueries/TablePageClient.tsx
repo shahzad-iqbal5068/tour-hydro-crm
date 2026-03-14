@@ -17,8 +17,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import type { InquiryRow, InquiryFormValues as FormValues } from "@/types";
-
-type UserOption = { id: string; name: string };
+import { useInquiries, useInquiry, useUsersList } from "@/hooks/api";
+import { Loader } from "@/components/ui/Loader";
 
 function normalizeText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -29,16 +29,15 @@ export default function TablePageClient() {
   const searchParams = useSearchParams();
   const editingId = searchParams.get("id");
 
-  const [rows, setRows] = useState<InquiryRow[]>([]);
-  const [users, setUsers] = useState<UserOption[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { data: rows, isLoading: loading, error: inquiriesError, createMutation, updateMutation, deleteMutation } = useInquiries();
+  const { data: inquiry, isLoading: loadingExisting } = useInquiry(editingId);
+  const { data: users = [] } = useUsersList();
+
   const [globalQuery, setGlobalQuery] = useState("");
   const [sorting, setSorting] = useState<SortingState>([{ id: "date", desc: true }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [loadingExisting, setLoadingExisting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const deleteLoading = deleteMutation.isPending;
 
   const {
     register,
@@ -55,76 +54,27 @@ export default function TablePageClient() {
     },
   });
 
-  const fetchInquiries = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const params = new URLSearchParams();
-      params.set("page", "1");
-      params.set("limit", "1000");
-      params.set("sortDate", "desc");
-      const res = await fetch(`/api/inquiries?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to load data");
-      const json = await res.json();
-      setRows(json.data || []);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load data");
-      toast.error("Failed to load data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch("/api/users/list");
-      if (!res.ok) return;
-      const data = await res.json();
-      setUsers(Array.isArray(data) ? data : []);
-    } catch {
-      setUsers([]);
-    }
-  };
-
   useEffect(() => {
-    fetchInquiries();
-    fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const fetchInquiry = async () => {
-      if (!editingId) {
-        reset({
-          date: new Date().toISOString().split("T")[0],
-          shift: "",
-          whatsappName: "",
-          remarks: "",
-          userId: "",
-        });
-        return;
-      }
-      try {
-        setLoadingExisting(true);
-        const res = await fetch(`/api/inquiries/${editingId}`);
-        if (!res.ok) throw new Error("Failed to load inquiry");
-        const data = await res.json();
-        reset({
-          date: data.date ? new Date(data.date).toISOString().slice(0, 10) : "",
-          shift: data.shift || "",
-          whatsappName: data.whatsappName || "",
-          remarks: data.remarks || "",
-          userId: data.userId || "",
-        });
-      } catch {
-        toast.error("Failed to load inquiry");
-      } finally {
-        setLoadingExisting(false);
-      }
-    };
-    void fetchInquiry();
-  }, [editingId, reset]);
+    if (!editingId) {
+      reset({
+        date: new Date().toISOString().split("T")[0],
+        shift: "",
+        whatsappName: "",
+        remarks: "",
+        userId: "",
+      });
+      return;
+    }
+    if (inquiry) {
+      reset({
+        date: inquiry.date ? new Date(inquiry.date).toISOString().slice(0, 10) : "",
+        shift: inquiry.shift || "",
+        whatsappName: inquiry.whatsappName || "",
+        remarks: inquiry.remarks || "",
+        userId: inquiry.userId || "",
+      });
+    }
+  }, [editingId, inquiry, reset]);
 
   const onSubmit = async (values: FormValues) => {
     const payload = {
@@ -135,17 +85,12 @@ export default function TablePageClient() {
       userId: values.userId || undefined,
     };
     try {
-      const res = await fetch(
-        editingId ? `/api/inquiries/${editingId}` : "/api/inquiries",
-        {
-          method: editingId ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-      if (!res.ok) throw new Error("Request failed");
+      if (editingId) {
+        await updateMutation.mutateAsync({ id: editingId, body: payload });
+      } else {
+        await createMutation.mutateAsync(payload);
+      }
       toast.success(editingId ? "Inquiry updated successfully" : "Inquiry created successfully");
-      void fetchInquiries();
       if (!editingId) {
         reset({
           date: new Date().toISOString().split("T")[0],
@@ -173,23 +118,16 @@ export default function TablePageClient() {
   const confirmDelete = async () => {
     if (!deleteId) return;
     try {
-      setDeleteLoading(true);
-      const res = await fetch(`/api/inquiries/${deleteId}`, { method: "DELETE" });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message || "Failed to delete inquiry");
-        return;
-      }
+      await deleteMutation.mutateAsync(deleteId);
       toast.success("Inquiry deleted");
       setDeleteId(null);
-      void fetchInquiries();
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete inquiry");
-    } finally {
-      setDeleteLoading(false);
     }
   };
+
+  const error = inquiriesError ? (inquiriesError as Error).message : null;
 
   const handleNewClick = () => {
     router.push("/inqueries");
@@ -390,11 +328,8 @@ export default function TablePageClient() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td
-                    colSpan={table.getAllColumns().length}
-                    className="px-4 py-6 text-center text-sm text-zinc-500 dark:text-zinc-400"
-                  >
-                    Loading...
+                  <td colSpan={table.getAllColumns().length} className="px-4 py-8">
+                    <Loader size="lg" label="Loading inquiries…" />
                   </td>
                 </tr>
               ) : error ? (

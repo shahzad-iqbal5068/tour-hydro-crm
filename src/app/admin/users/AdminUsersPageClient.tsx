@@ -5,6 +5,7 @@ import { Toaster, toast } from "react-hot-toast";
 import { Eye, EyeOff, Copy, RefreshCw } from "lucide-react";
 import type { Role, UserRow } from "@/types";
 import { useRequirePermission } from "@/hooks/useRequirePermission";
+import { Loader } from "@/components/ui/Loader";
 import { Permission } from "@/lib/permissions-config";
 
 const ROLES: Role[] = [
@@ -187,11 +188,8 @@ export default function AdminUsersPageClient() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-3 py-6 text-center text-sm text-zinc-500 dark:text-zinc-400"
-                  >
-                    Loading users...
+                  <td colSpan={5} className="px-3 py-8">
+                    <Loader size="lg" label="Loading users…" />
                   </td>
                 </tr>
               ) : users.length === 0 ? (
