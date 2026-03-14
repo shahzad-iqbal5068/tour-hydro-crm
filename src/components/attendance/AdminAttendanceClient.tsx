@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import type { AttendanceRow, Role } from "@/types";
 import { ensureImageUrl } from "@/lib/imageUrl";
-import { Loader } from "@/components/ui/Loader";
 import { useRequirePermission } from "@/hooks/useRequirePermission";
 import { Permission } from "@/lib/permissions-config";
+import { Loader } from "@/components/ui/Loader";
 
 const ROLES: (Role | "ALL")[] = [
   "ALL",

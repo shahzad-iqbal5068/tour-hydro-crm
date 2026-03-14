@@ -63,6 +63,7 @@ const sections: {
       label: "Admin",
       icon: <ShieldCheck className="h-5 w-5" />,
       items: [
+        { href: "/admin/performance", label: "Performance" },
         { href: "/admin/users", label: "Users" },
         { href: "/admin/attendance", label: "Attendance overview" },
       ],

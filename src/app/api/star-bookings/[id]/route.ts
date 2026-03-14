@@ -53,6 +53,7 @@ export async function PUT(request: NextRequest, context: Context) {
     const amount = Number.isNaN(collectionAmount) ? 0 : collectionAmount;
     const followUpDate = body.followUpDate !== undefined ? (body.followUpDate ? new Date(body.followUpDate) : null) : undefined;
     const followUpNote = body.followUpNote !== undefined ? body.followUpNote : undefined;
+    const userId = body.userId !== undefined ? body.userId || null : undefined;
 
     await connectToDatabase();
 
@@ -76,6 +77,9 @@ export async function PUT(request: NextRequest, context: Context) {
     }
     if (followUpNote !== undefined) {
       update.followUpNote = followUpNote;
+    }
+    if (userId !== undefined) {
+      update.userId = userId;
     }
 
     const updated = await StarBooking.findByIdAndUpdate(
