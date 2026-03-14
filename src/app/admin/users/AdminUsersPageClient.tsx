@@ -6,7 +6,6 @@ import { Eye, EyeOff, Copy, RefreshCw } from "lucide-react";
 import type { Role, UserRow } from "@/types";
 import { useRequirePermission } from "@/hooks/useRequirePermission";
 import { Permission } from "@/lib/permissions-config";
-import { Loader } from "@/components/ui/Loader";
 
 const ROLES: Role[] = [
   "SUPER_ADMIN",
@@ -189,7 +188,7 @@ export default function AdminUsersPageClient() {
               {loading ? (
                 <tr>
                   <td colSpan={5} className="px-3 py-8">
-                    <Loader size="lg" label="Loading users…" />
+                    <span className="text-sm text-zinc-500 dark:text-zinc-400">Loading users…</span>
                   </td>
                 </tr>
               ) : users.length === 0 ? (

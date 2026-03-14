@@ -1,14 +1,32 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { apiFetcher } from "@/lib/api";
-import { queryKeys } from "./queryKeys";
 
 export type UserOption = { id: string; name: string };
 
 export function useUsersList() {
-  return useQuery({
-    queryKey: queryKeys.usersList(),
-    queryFn: () => apiFetcher<UserOption[]>("/api/users/list"),
-  });
+  const [data, setData] = useState<UserOption[] | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setError(null);
+    apiFetcher<UserOption[]>("/api/users/list")
+      .then((res) => {
+        if (!cancelled) setData(Array.isArray(res) ? res : []);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)));
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { data: data ?? [], isLoading, error };
 }

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import TablePageClient from "./TablePageClient";
-import { Loader } from "@/components/ui/Loader";
 
 export const metadata: Metadata = {
   title: "Bookings Table | Hydro CRM",
@@ -14,7 +13,7 @@ export default function TablePage() {
     <Suspense
       fallback={
         <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-          <Loader block size="lg" label="Loading…" />
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>
         </div>
       }
     >

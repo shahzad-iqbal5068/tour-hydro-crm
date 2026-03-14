@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useDashboardStats, useFollowupsToday, type Period } from "@/hooks/api";
-import { Loader } from "@/components/ui/Loader";
 
 const PERIOD_LABELS: Record<Period, string> = {
   today: "Today",
@@ -75,9 +74,7 @@ export default function HomeStats() {
             Inquiries
           </p>
           {loading ? (
-            <div className="mt-2">
-              <Loader size="sm" />
-            </div>
+            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>
           ) : error ? (
             <p className="mt-2 text-sm text-red-500 dark:text-red-400">
               {error}
@@ -97,9 +94,7 @@ export default function HomeStats() {
             Bookings
           </p>
           {loading ? (
-            <div className="mt-2">
-              <Loader size="sm" />
-            </div>
+            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>
           ) : error ? (
             <p className="mt-2 text-sm text-red-500 dark:text-red-400">
               {error}

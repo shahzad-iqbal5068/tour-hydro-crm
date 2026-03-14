@@ -18,7 +18,6 @@ import {
 } from "@tanstack/react-table";
 import type { InquiryRow, InquiryFormValues as FormValues } from "@/types";
 import { useInquiries, useInquiry, useUsersList } from "@/hooks/api";
-import { Loader } from "@/components/ui/Loader";
 
 function normalizeText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -329,7 +328,7 @@ export default function TablePageClient() {
               {loading ? (
                 <tr>
                   <td colSpan={table.getAllColumns().length} className="px-4 py-8">
-                    <Loader size="lg" label="Loading inquiries…" />
+                    <span className="text-sm text-zinc-500 dark:text-zinc-400">Loading inquiries…</span>
                   </td>
                 </tr>
               ) : error ? (

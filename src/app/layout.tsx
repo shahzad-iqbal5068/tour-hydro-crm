@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import AppShell from "./AppShell";
-import { QueryProvider } from "@/components/providers/QueryProvider";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -23,9 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${roboto.variable} antialiased`}>
-        <QueryProvider>
-          <AppShell>{children}</AppShell>
-        </QueryProvider>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

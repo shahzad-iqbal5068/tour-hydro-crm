@@ -14,8 +14,6 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { Loader } from "@/components/ui/Loader";
-
 type Range = "daily" | "weekly" | "monthly" | "yearly";
 
 type PerformanceData = {
@@ -93,7 +91,7 @@ export default function PerformanceClient() {
   if (loading && !data) {
     return (
       <div className="rounded-lg border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-950">
-        <Loader block size="lg" label="Loading performance…" />
+        <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">Loading performance…</p>
       </div>
     );
   }
