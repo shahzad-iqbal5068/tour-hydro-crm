@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
     const amount = Number.isNaN(collectionAmount) ? 0 : collectionAmount;
     const followUpDate = body.followUpDate ? new Date(body.followUpDate) : undefined;
     const followUpNote = body.followUpNote ?? undefined;
+    const userId = body.userId ?? undefined;
 
     if (!category || !["4-5", "3"].includes(category)) {
       return NextResponse.json(
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
       callingRemarks,
       followUpDate,
       followUpNote,
+      userId,
     });
 
     return NextResponse.json(booking, { status: 201 });

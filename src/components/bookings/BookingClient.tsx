@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import { Pencil, Trash2, Search, ArrowUpDown, MessageCircle, CheckCircle } from "lucide-react";
-import { useStarBookings } from "@/hooks/api";
+import { useStarBookings, useUsersList } from "@/hooks/api";
 import { Loader } from "@/components/ui/Loader";
 import {
   flexRender,
@@ -37,6 +37,7 @@ type BookingRow = {
   followUpDate?: string | null;
   followUpSent?: boolean;
   followUpNote?: string | null;
+  userId?: string | null;
 };
 
 type BookingFormValues = {
@@ -52,6 +53,7 @@ type BookingFormValues = {
   callingRemarks: string;
   followUpDate: string;
   followUpNote: string;
+  userId: string;
 };
 
 function makeEmptyValues(): BookingFormValues {
@@ -68,6 +70,7 @@ function makeEmptyValues(): BookingFormValues {
     callingRemarks: "",
     followUpDate: "",
     followUpNote: "",
+    userId: "",
   };
 }
 
@@ -117,6 +120,7 @@ export default function BookingClient({
     deleteMutation,
     followUpDoneMutation,
   } = useStarBookings(viewFilter === "all" ? "all" : viewFilter);
+  const { data: users = [] } = useUsersList();
   const deleteLoading = deleteMutation.isPending;
   const followUpDoneId = followUpDoneMutation.isPending ? followUpDoneMutation.variables ?? null : null;
   const [globalQuery, setGlobalQuery] = useState("");
@@ -156,6 +160,7 @@ export default function BookingClient({
       callingRemarks: row.callingRemarks || "",
       followUpDate: row.followUpDate ? new Date(row.followUpDate).toISOString().slice(0, 10) : "",
       followUpNote: row.followUpNote || "",
+      userId: row.userId || "",
     });
     if (TIME_PRESETS.includes(row.time as (typeof TIME_PRESETS)[number])) {
       setTimeMode("preset");
@@ -176,6 +181,7 @@ export default function BookingClient({
   const handleNew = () => {
     setSelectedId(null);
     reset(makeEmptyValues());
+    setFormCategory(viewFilter === "3" ? "3" : "4-5");
     setTimeMode("preset");
     setTimePreset("");
     setCallingMode("preset");
@@ -198,6 +204,7 @@ export default function BookingClient({
       callingRemarks: values.callingRemarks,
       followUpDate: values.followUpDate || undefined,
       followUpNote: values.followUpNote || undefined,
+      userId: values.userId || undefined,
     };
 
     try {
@@ -634,6 +641,25 @@ export default function BookingClient({
           </p>
         </div>
         <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
+          <div>
+            <label className="mb-1 block text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
+              Assigned to (employee)
+            </label>
+            <select
+              className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-black dark:text-zinc-50"
+              {...register("userId")}
+            >
+              <option value="">Unassigned</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+              For performance tracking
+            </p>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-[11px] font-medium text-zinc-800 dark:text-zinc-200">

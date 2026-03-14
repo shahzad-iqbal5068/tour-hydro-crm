@@ -15,6 +15,7 @@ export interface IStarBooking extends Document {
   followUpDate?: Date;
   followUpSent: boolean;
   followUpNote?: string;
+  userId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +40,7 @@ const StarBookingSchema = new Schema<IStarBooking>(
     followUpDate: { type: Date },
     followUpSent: { type: Boolean, default: false },
     followUpNote: { type: String },
+    userId: { type: Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }
 );
