@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { useStarBookings, useUsersList } from "@/hooks/api";
+import { PageLoader } from "@/components/ui/PageLoader";
 import BookingForm, { type BookingFormValues, type BookingVariant } from "./BookingForm";
 import BookingTable, { type BookingTableRow } from "./BookingTable";
 
@@ -138,13 +139,22 @@ export default function BookingClient({
     }
   };
 
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-6xl">
+        <Toaster position="top-right" />
+        <PageLoader message="Loading bookings…" fullScreen />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 lg:flex-row">
       <Toaster position="top-right" />
 
       <BookingTable
         data={rows}
-        isLoading={loading}
+        isLoading={false}
         viewFilter={viewFilter}
         onViewFilterChange={handleViewFilterChange}
         onNewBooking={handleNew}

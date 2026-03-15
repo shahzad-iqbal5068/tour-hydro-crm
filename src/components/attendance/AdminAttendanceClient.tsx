@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import type { AttendanceRow, Role } from "@/types";
 import { ensureImageUrl } from "@/lib/imageUrl";
 import { useRequirePermission } from "@/hooks/useRequirePermission";
 import { Permission } from "@/lib/permissions-config";
+import { useAttendanceList } from "@/hooks/api";
 
 const ROLES: (Role | "ALL")[] = [
   "ALL",
@@ -19,44 +20,24 @@ const ROLES: (Role | "ALL")[] = [
 
 export default function AdminAttendanceClient() {
   const { allowed, loading: authLoading } = useRequirePermission(Permission.VIEW_ALL_ATTENDANCE);
-  const [rows, setRows] = useState<AttendanceRow[]>([]);
-  const [loading, setLoading] = useState(false);
   const [date, setDate] = useState<string>("");
   const [role, setRole] = useState<"ALL" | Role>("ALL");
   const now = new Date();
   const [month, setMonth] = useState<number>(now.getMonth() + 1);
   const [year, setYear] = useState<number>(now.getFullYear());
 
-  const loadAttendance = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (date) {
-        params.set("date", date);
-      } else {
-        params.set("month", String(month));
-        params.set("year", String(year));
-      }
-      if (role !== "ALL") params.set("role", role);
-      const res = await fetch(`/api/attendance?${params.toString()}`);
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message || "Failed to load attendance");
-        return;
-      }
-      setRows(data.data || []);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load attendance");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const listParams = useMemo(
+    () => ({
+      ...(date ? { date } : { month, year }),
+      ...(role !== "ALL" ? { role } : {}),
+    }),
+    [date, month, year, role]
+  );
+  const { data: rows, isLoading: loading, error, refetch } = useAttendanceList(listParams);
 
   useEffect(() => {
-    void loadAttendance();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (error) toast.error(error.message);
+  }, [error]);
 
   const formatTime = (value?: string) => {
     if (!value) return "—";
@@ -102,7 +83,7 @@ export default function AdminAttendanceClient() {
         </div>
         <button
           type="button"
-          onClick={loadAttendance}
+          onClick={() => refetch()}
           className="self-start rounded-md border border-zinc-300 px-3 py-1.5 text-[11px] font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
         >
           Refresh
@@ -169,7 +150,7 @@ export default function AdminAttendanceClient() {
         <div className="flex items-end">
           <button
             type="button"
-            onClick={loadAttendance}
+            onClick={() => refetch()}
             className="rounded-md bg-zinc-900 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             Apply filters

@@ -1,6 +1,6 @@
 /**
- * Base fetcher for API routes. Use with TanStack Query or standalone.
- * Throws on non-ok response with parsed message when possible.
+ * Base API client. All API requests must go through this or endpoint modules in lib/api.
+ * Do not call fetch() from components or hooks; use the functions exported from @/lib/api.
  */
 export async function apiFetcher<T = unknown>(
   url: string,

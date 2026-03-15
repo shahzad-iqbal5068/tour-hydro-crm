@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { AuthUser } from "@/types";
+import { profileUpdate, uploadImage as apiUploadImage } from "@/lib/api";
 import { ensureImageUrl } from "@/lib/imageUrl";
 import { toast } from "react-hot-toast";
 
@@ -155,19 +156,12 @@ export function ProfileImageModal({
       setUploading(true);
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/api/upload/image", { method: "POST", body: formData });
-      const data = (await res.json()) as { url?: string; message?: string };
-      if (!res.ok) {
-        toast.error(data.message ?? "Upload failed");
-        return;
-      }
-      if (data.url) {
-        setAvatarUrl(data.url);
-        toast.success("Image uploaded");
-      }
+      const url = await apiUploadImage(formData);
+      setAvatarUrl(url);
+      toast.success("Image uploaded");
     } catch (err) {
       console.error(err);
-      toast.error("Upload failed");
+      toast.error(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
     }
@@ -192,16 +186,7 @@ export function ProfileImageModal({
   const handleSave = async () => {
     try {
       setSaving(true);
-      const res = await fetch("/api/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ avatarUrl }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message || "Failed to update profile");
-        return;
-      }
+      const data = await profileUpdate({ avatarUrl: avatarUrl ?? "" });
       toast.success("Profile image updated");
       onUpdated({ avatarUrl: data.avatarUrl });
       onClose();

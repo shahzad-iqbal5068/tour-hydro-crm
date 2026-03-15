@@ -3,23 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { ensureImageUrl } from "@/lib/imageUrl";
-
-type TodayRecord = {
-  _id: string;
-  checkInAt?: string;
-  checkOutAt?: string;
-  location?: string;
-  photoUrl?: string;
-};
-
-type HistoryRecord = {
-  _id: string;
-  date: string;
-  checkInAt?: string;
-  checkOutAt?: string;
-  location?: string;
-  photoUrl?: string;
-};
+import {
+  attendanceStart,
+  attendanceEnd,
+  uploadImage as apiUploadImage,
+  reverseGeocode,
+} from "@/lib/api";
+import {
+  useAttendanceMine,
+  useAttendanceMineHistory,
+  useInvalidateAttendance,
+} from "@/hooks/api";
 
 function formatDuration(fromIso?: string, toIso?: string) {
   if (!fromIso) return "—";
@@ -32,15 +26,16 @@ function formatDuration(fromIso?: string, toIso?: string) {
 }
 
 export default function AttendanceClient() {
-  const [status, setStatus] = useState<"none" | "checked_in" | "closed">("none");
-  const [today, setToday] = useState<TodayRecord | null>(null);
-  const [history, setHistory] = useState<HistoryRecord[]>([]);
-  const [loadingToday, setLoadingToday] = useState(false);
+  const { status, record: today, isLoading: loadingToday, error: errorMine } = useAttendanceMine();
+  const { data: history, isLoading: loadingHistory, error: errorHistory } =
+    useAttendanceMineHistory(30);
+  const invalidateAttendance = useInvalidateAttendance();
+
   const [loadingAction, setLoadingAction] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(false);
   const [liveDuration, setLiveDuration] = useState<string>("—");
 
-  const [modalOpen, setModalOpen] = useState(false);
+  const [startModalOpen, setStartModalOpen] = useState(false);
+  const [endModalOpen, setEndModalOpen] = useState(false);
   const [capturedUrl, setCapturedUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -49,47 +44,11 @@ export default function AttendanceClient() {
   const [locLoading, setLocLoading] = useState(false);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        setLoadingToday(true);
-        const res = await fetch("/api/attendance/mine");
-        const data = await res.json();
-        if (!res.ok) {
-          toast.error(data.message || "Failed to load attendance status");
-          return;
-        }
-        setStatus(data.status as "none" | "checked_in" | "closed");
-        setToday(data.record);
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to load attendance status");
-      } finally {
-        setLoadingToday(false);
-      }
-    };
-    void load();
-  }, []);
-
+    if (errorMine) toast.error(errorMine.message);
+  }, [errorMine]);
   useEffect(() => {
-    const load = async () => {
-      try {
-        setLoadingHistory(true);
-        const res = await fetch("/api/attendance/mine/history?limit=30");
-        const data = await res.json();
-        if (!res.ok) {
-          toast.error(data.message || "Failed to load attendance history");
-          return;
-        }
-        setHistory(data.data || []);
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to load attendance history");
-      } finally {
-        setLoadingHistory(false);
-      }
-    };
-    void load();
-  }, []);
+    if (errorHistory) toast.error("Failed to load attendance history");
+  }, [errorHistory]);
 
   useEffect(() => {
     if (status !== "checked_in" || !today?.checkInAt) {
@@ -104,7 +63,8 @@ export default function AttendanceClient() {
   }, [status, today?.checkInAt]);
 
   useEffect(() => {
-    if (!modalOpen) {
+    const anyModalOpen = startModalOpen || endModalOpen;
+    if (!anyModalOpen) {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((t) => t.stop());
       }
@@ -126,7 +86,7 @@ export default function AttendanceClient() {
       }
     };
     void start();
-  }, [modalOpen]);
+  }, [startModalOpen, endModalOpen]);
 
   const capturePhotoToDataUrl = async (): Promise<string | null> => {
     const video = videoRef.current;
@@ -140,17 +100,11 @@ export default function AttendanceClient() {
     return canvas.toDataURL("image/jpeg", 0.9);
   };
 
-  const uploadImage = async (dataUrl: string): Promise<string> => {
+  const uploadImageFromDataUrl = async (dataUrl: string): Promise<string> => {
     const blob = await (await fetch(dataUrl)).blob();
     const form = new FormData();
     form.append("file", blob);
-    const res = await fetch("/api/upload/image", { method: "POST", body: form });
-    const json = (await res.json()) as { url?: string; message?: string };
-    if (!res.ok) {
-      throw new Error(json.message ?? "Upload failed");
-    }
-    if (!json.url) throw new Error("No image URL returned");
-    return json.url;
+    return apiUploadImage(form);
   };
 
   const handleLocate = () => {
@@ -160,10 +114,25 @@ export default function AttendanceClient() {
     }
     setLocLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const { latitude, longitude } = pos.coords;
-        setLocationText(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
-        setLocLoading(false);
+        const lat = latitude.toFixed(5);
+        const lon = longitude.toFixed(5);
+        try {
+          const address = await reverseGeocode(latitude, longitude);
+          if (address) {
+            setLocationText(address);
+          } else {
+            setLocationText(`${lat}, ${lon}`);
+            toast.error("Address not found; coordinates stored.");
+          }
+        } catch (err) {
+          console.error(err);
+          setLocationText(`${lat}, ${lon}`);
+          toast.error("Could not get address; coordinates stored.");
+        } finally {
+          setLocLoading(false);
+        }
       },
       (err) => {
         console.error(err);
@@ -176,7 +145,7 @@ export default function AttendanceClient() {
   const handleStartClick = () => {
     setCapturedUrl(null);
     setLocationText("");
-    setModalOpen(true);
+    setStartModalOpen(true);
   };
 
   const handleStartConfirm = async () => {
@@ -187,34 +156,18 @@ export default function AttendanceClient() {
         toast.error("Could not capture photo");
         return;
       }
-      const uploadedUrl = await uploadImage(dataUrl);
+      const uploadedUrl = await uploadImageFromDataUrl(dataUrl);
       setCapturedUrl(uploadedUrl);
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((t) => t.stop());
       }
-      const res = await fetch("/api/attendance/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          location: locationText || undefined,
-          photoUrl: uploadedUrl,
-        }),
+      await attendanceStart({
+        location: locationText || undefined,
+        photoUrl: uploadedUrl,
       });
-      const json = await res.json();
-      if (!res.ok) {
-        toast.error(json.message || "Failed to start attendance");
-        return;
-      }
-      setStatus("checked_in");
-      setToday({
-        _id: json._id,
-        checkInAt: json.checkInAt,
-        location: json.location,
-        photoUrl: json.photoUrl,
-        checkOutAt: undefined,
-      });
+      invalidateAttendance();
       toast.success("Attendance started");
-      setModalOpen(false);
+      setStartModalOpen(false);
     } catch (err) {
       console.error(err);
       toast.error("Failed to start attendance");
@@ -223,31 +176,26 @@ export default function AttendanceClient() {
     }
   };
 
-  const handleEnd = async () => {
+  const handleEndConfirm = async () => {
     try {
       setLoadingAction(true);
-      const res = await fetch("/api/attendance/end", {
-        method: "POST",
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        toast.error(json.message || "Failed to end attendance");
+      const dataUrl = await capturePhotoToDataUrl();
+      if (!dataUrl) {
+        toast.error("Could not capture photo");
         return;
       }
-      setStatus("closed");
-      setToday((prev) =>
-        prev
-          ? {
-              ...prev,
-              checkOutAt: json.checkOutAt,
-            }
-          : {
-              _id: json._id,
-              checkInAt: json.checkInAt,
-              checkOutAt: json.checkOutAt,
-            }
-      );
+      const uploadedUrl = await uploadImageFromDataUrl(dataUrl);
+      setCapturedUrl(uploadedUrl);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+      }
+      await attendanceEnd({
+        location: locationText || undefined,
+        photoUrl: uploadedUrl,
+      });
+      invalidateAttendance();
       toast.success("Attendance ended");
+      setEndModalOpen(false);
     } catch (err) {
       console.error(err);
       toast.error("Failed to end attendance");
@@ -288,7 +236,10 @@ export default function AttendanceClient() {
           </button>
           <button
             type="button"
-            onClick={handleEnd}
+            onClick={() => {
+              setCapturedUrl(null);
+              setEndModalOpen(true);
+            }}
             disabled={
               status !== "checked_in" || loadingToday || loadingAction
             }
@@ -411,7 +362,7 @@ export default function AttendanceClient() {
         </table>
       </div>
 
-      {modalOpen && (
+      {startModalOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-950 p-4 text-xs text-zinc-50 shadow-xl">
             <div className="mb-3 flex items-center justify-between">
@@ -423,7 +374,7 @@ export default function AttendanceClient() {
               </div>
               <button
                 type="button"
-                onClick={() => setModalOpen(false)}
+                onClick={() => setStartModalOpen(false)}
                 className="rounded-full px-2 py-1 text-xs text-zinc-400 hover:bg-zinc-800"
               >
                 ✕
@@ -449,7 +400,7 @@ export default function AttendanceClient() {
                   type="text"
                   value={locationText}
                   onChange={(e) => setLocationText(e.target.value)}
-                  placeholder="Latitude, longitude or address"
+                  placeholder="Location / address (e.g. Dubai Marina or Google Maps link)"
                   className="flex-1 rounded-md border border-zinc-700 bg-black px-2 py-1.5 text-xs text-zinc-50 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
                 <button
@@ -466,7 +417,7 @@ export default function AttendanceClient() {
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setModalOpen(false)}
+                onClick={() => setStartModalOpen(false)}
                 className="rounded-md border border-zinc-700 px-3 py-1.5 text-[11px] text-zinc-200 hover:bg-zinc-800"
               >
                 Cancel
@@ -478,6 +429,55 @@ export default function AttendanceClient() {
                 className="rounded-md bg-emerald-600 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-emerald-700/60"
               >
                 {loadingAction ? "Saving..." : "Capture & start"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {endModalOpen && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-950 p-4 text-xs text-zinc-50 shadow-xl">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold">End attendance</h2>
+                <p className="text-[11px] text-zinc-400">
+                  Capture a checkout photo to finish your attendance.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEndModalOpen(false)}
+                className="rounded-full px-2 py-1 text-xs text-zinc-400 hover:bg-zinc-800"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mb-3 overflow-hidden rounded-md border border-zinc-700 bg-black">
+              <video
+                ref={videoRef}
+                className="h-48 w-full object-cover"
+                autoPlay
+                muted
+                playsInline
+              />
+            </div>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEndModalOpen(false)}
+                className="rounded-md border border-zinc-700 px-3 py-1.5 text-[11px] text-zinc-200 hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleEndConfirm}
+                disabled={loadingAction}
+                className="rounded-md bg-zinc-900 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-800/60"
+              >
+                {loadingAction ? "Saving..." : "Capture & check out"}
               </button>
             </div>
           </div>

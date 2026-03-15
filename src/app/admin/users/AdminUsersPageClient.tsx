@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { Eye, EyeOff, Copy, RefreshCw } from "lucide-react";
 import type { Role, UserRow } from "@/types";
 import { useRequirePermission } from "@/hooks/useRequirePermission";
 import { Permission } from "@/lib/permissions-config";
+import { useAdminUsers } from "@/hooks/api";
 
 const ROLES: Role[] = [
   "SUPER_ADMIN",
@@ -27,9 +28,7 @@ function generatePassword(length = 12): string {
 
 export default function AdminUsersPageClient() {
   const { allowed, loading: authLoading } = useRequirePermission(Permission.MANAGE_USERS);
-  const [users, setUsers] = useState<UserRow[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const { users, isLoading: loading, refetch, saveMutation } = useAdminUsers();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<{
     name: string;
@@ -44,27 +43,6 @@ export default function AdminUsersPageClient() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
-
-  const loadUsers = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/admin/users");
-      if (!res.ok) {
-        throw new Error("Failed to load users");
-      }
-      const data = await res.json();
-      setUsers(data);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load users");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadUsers();
-  }, []);
 
   const startCreate = () => {
     setSelectedId(null);
@@ -100,7 +78,6 @@ export default function AdminUsersPageClient() {
       }
     }
     try {
-      setSaving(true);
       setCreatedCredentials(null);
       const payload: { id?: string; name: string; email: string; role: Role; password?: string } = {
         name: form.name,
@@ -113,14 +90,9 @@ export default function AdminUsersPageClient() {
       } else {
         payload.password = form.password;
       }
-      const res = await fetch("/api/admin/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message || "Failed to save user");
+      const data = await saveMutation.mutateAsync(payload);
+      if (data && "message" in data) {
+        toast.error((data as { message: string }).message || "Failed to save user");
         return;
       }
       toast.success(selectedId ? "User updated" : "User created");
@@ -129,12 +101,9 @@ export default function AdminUsersPageClient() {
       }
       setSelectedId(null);
       setForm({ name: "", email: "", role: "SALES_EXEC", password: "" });
-      loadUsers();
     } catch (error) {
       console.error(error);
       toast.error("Failed to save user");
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -397,10 +366,10 @@ export default function AdminUsersPageClient() {
 
           <button
             type="submit"
-            disabled={saving}
+            disabled={saveMutation.isPending}
             className="mt-2 inline-flex w-full items-center justify-center rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
-            {saving
+            {saveMutation.isPending
               ? selectedId
                 ? "Saving..."
                 : "Creating..."

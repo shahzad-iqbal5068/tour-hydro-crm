@@ -1,106 +1,56 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetcher, apiMutation } from "@/lib/api";
-
-export type GroupBookingRow = {
-  _id: string;
-  groupBookingName: string;
-  guestName: string;
-  contactWhatsapp: string;
-  groupsCount: number;
-  cruiseName: string;
-  numberOfPax: number;
-  timeSlot: string;
-  inquiryDate?: string | null;
-  confirmDate?: string | null;
-  bookingStatusRemarks?: string | null;
-  totalAmount: number;
-  advancePaid: number;
-  remainingAmount: number;
-  callingDate?: string | null;
-  remarks?: string | null;
-};
+import type { GroupBookingRow } from "@/types/booking";
+import { queryKeys } from "./queryKeys";
+import { DEFAULT_STALE_MS, normalizeQueryError, wrapMutationResult } from "./queryHelpers";
 
 type GroupBookingsResponse = { data: GroupBookingRow[] };
 
-function usePendingMutation() {
-  const [pendingId, setPendingId] = useState<string | null>(null);
-  return {
-    get variables() {
-      return pendingId ?? undefined;
-    },
-    get isPending() {
-      return !!pendingId;
-    },
-    run: async <T>(id: string, fn: () => Promise<T>) => {
-      setPendingId(id);
-      try {
-        return await fn();
-      } finally {
-        setPendingId(null);
-      }
-    },
-  };
-}
-
 export function useGroupBookings() {
-  const [data, setData] = useState<GroupBookingRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchData = useCallback(async () => {
-    setError(null);
-    setIsLoading(true);
-    try {
-      const res = await apiFetcher<GroupBookingsResponse>("/api/group-bookings");
-      setData(res?.data ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const {
+    data: response,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: queryKeys.groupBookings(),
+    queryFn: () => apiFetcher<GroupBookingsResponse>("/api/group-bookings"),
+    staleTime: DEFAULT_STALE_MS,
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const data = response?.data ?? [];
 
-  const invalidate = useCallback(() => fetchData(), [fetchData]);
-  const deletePending = usePendingMutation();
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: queryKeys.groupBookings() });
 
-  const createMutation = {
-    mutateAsync: (body: Record<string, unknown>) =>
-      apiMutation<GroupBookingRow>("/api/group-bookings", "POST", body).then(() => invalidate()),
-    isPending: false,
-  };
+  const createMutation = useMutation({
+    mutationFn: (body: Record<string, unknown>) =>
+      apiMutation<GroupBookingRow>("/api/group-bookings", "POST", body),
+    onSuccess: () => invalidate(),
+  });
 
-  const updateMutation = {
-    mutateAsync: ({ id, body }: { id: string; body: Record<string, unknown> }) =>
-      apiMutation<GroupBookingRow>(`/api/group-bookings/${id}`, "PUT", body).then(() => invalidate()),
-    isPending: false,
-  };
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Record<string, unknown> }) =>
+      apiMutation<GroupBookingRow>(`/api/group-bookings/${id}`, "PUT", body),
+    onSuccess: () => invalidate(),
+  });
 
-  const deleteMutation = {
-    get variables() {
-      return deletePending.variables;
-    },
-    get isPending() {
-      return deletePending.isPending;
-    },
-    mutateAsync: (id: string) =>
-      deletePending.run(id, () =>
-        apiMutation<{ message: string }>(`/api/group-bookings/${id}`, "DELETE").then(() => invalidate())
-      ),
-  };
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiMutation<{ message: string }>(`/api/group-bookings/${id}`, "DELETE"),
+    onSuccess: () => invalidate(),
+  });
 
   return {
     data,
     isLoading,
-    error,
+    error: normalizeQueryError(error),
     invalidate,
-    createMutation,
-    updateMutation,
-    deleteMutation,
+    createMutation: wrapMutationResult(createMutation),
+    updateMutation: wrapMutationResult(updateMutation),
+    deleteMutation: wrapMutationResult(deleteMutation, { includeVariables: true }),
   };
 }

@@ -1,112 +1,76 @@
 # Hydro CRM
 
-A CRM for tourist cruise operations: manage inquiries, 4–5 star and 3 star bookings, attendance, and users—with JWT auth, MongoDB, and a responsive dashboard.
+**Full-stack CRM for cruise & tourism operations** — inquiries, star and group bookings, attendance, and role-based admin. Built with Next.js App Router, TypeScript, MongoDB, and a scalable API + React Query architecture.
 
 ---
 
-## Tech stack
+## Highlights
 
-- **Framework:** Next.js 16 (App Router)
-- **UI:** React 19, Tailwind CSS 4
-- **Database:** MongoDB (Mongoose)
-- **Auth:** JWT in cookies, bcrypt for passwords
-- **Forms:** react-hook-form, react-hot-toast
-- **Icons:** Lucide React
+- **Next.js 16** (App Router), **React 19**, **TypeScript** — type-safe end-to-end
+- **Scalable data layer** — all API calls in `src/lib/api`; React Query hooks in `src/hooks/api`; shared types in `src/types`
+- **JWT auth** (httpOnly-style cookies), **MongoDB + Mongoose**, **Tailwind CSS**
+- **TanStack Query** for server state (caching, mutations, loading/error); **React Table** for sortable, filterable tables
+- **Role-based access** — permission matrix for admin, attendance, and user management
+
+---
+
+## Tech Stack
+
+| Layer | Technologies |
+|-------|--------------|
+| **Framework** | Next.js 16 (App Router), React 19 |
+| **Language** | TypeScript |
+| **Styling** | Tailwind CSS 4 |
+| **Data & state** | TanStack Query (React Query), React Hook Form |
+| **Database** | MongoDB, Mongoose |
+| **Auth** | JWT (cookie), bcrypt |
+| **UI** | Lucide React, Recharts, Framer Motion, react-hot-toast |
+
+---
+
+## Architecture
+
+- **API layer** (`src/lib/api`) — all HTTP/upload and external calls (auth, attendance, upload, admin, geocoding). Components and hooks do not call `fetch` directly.
+- **React Query hooks** (`src/hooks/api`) — `useQuery` / `useMutation` per domain (inquiries, bookings, attendance, admin). Shared `queryHelpers` (stale times, `normalizeQueryError`, `wrapMutationResult`).
+- **Types** (`src/types`) — dedicated files per domain (user, inquiry, booking, attendance, groupDashboard, admin); imported where used.
+- **Server logic** — API routes in `src/app/api/*`; UI components stay presentational and use hooks + `lib/api`.
 
 ---
 
 ## Features
 
-### Dashboard (Home)
-
-- **Stats cards:** Inquiries and Bookings counts from the database.
-- **Period filter:** Today, Weekly, Monthly, Yearly (dropdown).
-- **Bookings breakdown:** In one card: 4–5 Star, 3 Star, and Total.
-- **Layout:** 4 cards in one row on large screens; 2 on tablet; 1 on mobile.
-
-### Inquiries
-
-- **List:** Table with date, shift, WhatsApp name, remarks; filter by WhatsApp name; sort by date; search; pagination; print.
-- **Form:** Same page (side-by-side on desktop): add/edit with date, shift, WhatsApp name, remarks; validation and toasts.
-- **Actions:** Edit (pencil) and Delete (trash) with confirmation modal; API: GET, POST, PUT, DELETE.
-
-### Bookings (4–5 Star & 3 Star)
-
-- **Two sections:** “4–5 Stars Booking” and “3 Stars Booking” in the sidebar.
-- **Table:** Time, Pax, Guest name, Number, Collection, Paid, Balance, Deck, Remarks, Calling remarks; Edit and Delete per row.
-- **Form:** Side panel to add/edit; create/update/delete via `/api/star-bookings` (full CRUD).
-- **Storage:** MongoDB `StarBooking` model; category `"4-5"` or `"3"`.
-
-### Attendance
-
-- **My Attendance:** Check in (camera + optional GPS, photo to Cloudinary), check out; today’s status and live elapsed time; recent history table.
-- **Admin Attendance:** Table of all staff attendance; filters: date, month, year, role; columns: date, name, role, check-in/out, duration, location, photo link.
-
-### Admin – Users
-
-- **User management:** Table of users; add/edit roles (SUPER_ADMIN, ADMIN, MANAGER, CEO, SALES_EXEC, CALL_PERSON).
-- **Layout:** Table and form side-by-side (same as inquiries).
-
-### Permissions (roles)
-
-- **Roles:** SUPER_ADMIN, ADMIN, MANAGER, CEO, SALES_EXEC, CALL_PERSON.
-- **Enforcement:** API routes use `requirePermission(Permission.…)` (e.g. `MANAGE_USERS` for admin users, `VIEW_ALL_ATTENDANCE` for attendance list). UI hides the Admin sidebar section for roles that lack `MANAGE_USERS` or `VIEW_ALL_ATTENDANCE`.
-- **Docs:** See [PERMISSIONS.md](./PERMISSIONS.md) for the full role × permission matrix and how to use permissions in API and UI (creating documents, protecting routes, showing/hiding by role).
-- **Config:** Single source of truth: `src/lib/permissions-config.ts` (client-safe); server helpers in `src/lib/permissions.ts`.
-
-### UI / UX
-
-- **Theme:** Light/dark toggle in navbar (class-based, no flash).
-- **Sidebar:** Icon bar + expandable sub-sidebar with section links; mobile overlay with burger menu.
-- **Responsive:** Layout and cards adapt for mobile, tablet, and desktop.
+- **Dashboard** — KPI cards (inquiries, bookings by category), period filter (today/weekly/monthly/yearly).
+- **Inquiries** — CRUD table + form, search, filters, pagination.
+- **Bookings** — 4–5 Star and 3 Star booking flows; table + form; full CRUD via API.
+- **Group bookings** — Dedicated model and UI; group dashboard with leads, follow-ups, reminders.
+- **Attendance** — Check-in/check-out with camera (Cloudinary), GPS → reverse geocode (Nominatim); admin list with date/role filters.
+- **Admin** — User management (roles, create/update); performance dashboard (conversion, leaderboard, time series).
+- **Permissions** — Role × permission matrix; API and UI guarded by `requirePermission` and hooks.
 
 ---
 
-## Project setup
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 20+
-- pnpm
-- MongoDB (local or Atlas)
-- (Optional) Cloudinary for profile and attendance photos
+- **Node.js 20+**
+- **pnpm**
+- **MongoDB** (local or Atlas)
+- (Optional) **Cloudinary** for profile and attendance images
 
-### 1. Clone and install
+### Install & run
 
 ```bash
-git clone <repository-url>
+git clone <repo-url>
 cd hydro-crm
 pnpm install
-```
-
-### 2. Environment variables
-
-Copy the example env and set values:
-
-```bash
-cp .env.example .env.local
-```
-
-Edit `.env.local`:
-
-| Variable | Description |
-|----------|-------------|
-| `MONGODB_URI` | MongoDB connection string (Atlas or e.g. `mongodb://127.0.0.1:27017/tourhydro`) |
-| `JWT_SECRET` | Secret for signing JWTs (use a long random string in production) |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name (profile/attendance images) |
-| `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | Cloudinary unsigned upload preset |
-
-See `.env.example` for commented examples.
-
-### 3. Run locally
-
-```bash
+cp .env.example .env.local   # set MONGODB_URI, JWT_SECRET, Cloudinary vars
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Log in (first user with the configured super-admin email becomes SUPER_ADMIN).
+Open [http://localhost:3000](http://localhost:3000). Use the credentials of your first super-admin user to log in.
 
-### 4. Build and start (production)
+### Build for production
 
 ```bash
 pnpm build
@@ -119,69 +83,58 @@ pnpm start
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start dev server |
+| `pnpm dev` | Development server |
 | `pnpm build` | Production build |
-| `pnpm start` | Start production server |
-| `pnpm lint` | Run ESLint |
+| `pnpm start` | Production server |
+| `pnpm lint` | ESLint |
 
 ---
 
-## API overview
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/                # REST route handlers (auth, inquiries, bookings, attendance, admin)
+│   ├── admin/              # Admin users, attendance, performance
+│   ├── attendance/         # My attendance
+│   ├── bookings/           # Star & group bookings, group dashboard
+│   ├── inqueries/          # Inquiries
+│   └── login/
+├── components/             # UI (layout, attendance, bookings, group-dashboard, ui)
+├── hooks/
+│   └── api/                # React Query hooks + queryKeys, queryHelpers
+├── lib/
+│   └── api/                # API client (attendance, auth, upload, profile, admin, geocoding)
+├── models/                 # Mongoose schemas
+└── types/                  # TypeScript types by domain
+```
+
+---
+
+## API Overview
 
 | Area | Endpoints |
 |------|-----------|
 | **Auth** | `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` |
-| **Profile** | `GET /api/profile`, `PUT /api/profile` (avatar URL, re-issue JWT) |
-| **Inquiries** | `GET /api/inquiries`, `POST /api/inquiries`, `GET /api/inquiries/[id]`, `PUT /api/inquiries/[id]`, `DELETE /api/inquiries/[id]` |
-| **Star bookings** | `GET /api/star-bookings?category=4-5|3`, `POST /api/star-bookings`, `GET/PUT/DELETE /api/star-bookings/[id]` |
-| **Dashboard** | `GET /api/dashboard/stats?period=today|weekly|monthly|yearly` (inquiries + bookings4to5, bookings3, bookingsTotal) |
-| **Attendance** | `GET /api/attendance/mine`, `POST /api/attendance/start`, `POST /api/attendance/end`, `GET /api/attendance/mine/history`, `GET /api/attendance` (admin, with filters) |
-| **Admin users** | `GET /api/admin/users`, `POST /api/admin/users` (create/update) |
+| **Profile** | `PUT /api/profile` |
+| **Inquiries** | `GET/POST /api/inquiries`, `GET/PUT/DELETE /api/inquiries/[id]` |
+| **Star bookings** | `GET/POST /api/star-bookings`, `GET/PUT/DELETE /api/star-bookings/[id]`, `PUT .../followup` |
+| **Group bookings** | `GET/POST /api/group-bookings`, `GET/PUT/DELETE /api/group-bookings/[id]` |
+| **Group dashboard leads** | `GET/POST /api/group-dashboard-leads` |
+| **Dashboard** | `GET /api/dashboard/stats?period=...` |
+| **Attendance** | `GET /api/attendance/mine`, `POST /api/attendance/start`, `POST /api/attendance/end`, `GET /api/attendance/mine/history`, `GET /api/attendance` (admin) |
+| **Admin** | `GET/POST /api/admin/users`, `GET /api/admin/performance?range=...` |
+| **Upload** | `POST /api/upload/image` |
 
 ---
 
-## Project structure (main parts)
+## CI
 
-```
-hydro-crm/
-├── .env.example          # Env template
-├── .github/workflows/    # CI (lint + build)
-├── src/
-│   ├── app/
-│   │   ├── api/          # Route handlers (auth, inquiries, star-bookings, attendance, dashboard, admin)
-│   │   ├── admin/        # Admin users, admin attendance
-│   │   ├── attendance/   # My attendance
-│   │   ├── bookings/     # 4-5 stars, 3 stars
-│   │   ├── inqueries/    # Inquiries table + form
-│   │   ├── login/
-│   │   ├── AppShell.tsx  # Layout, sidebar, navbar, auth guard
-│   │   ├── HomeStats.tsx # Dashboard stats cards + period
-│   │   ├── layout.tsx
-│   │   └── page.tsx      # Home/dashboard
-│   ├── components/
-│   │   ├── layout/       # Sidebar, Navbar, Profile modals
-│   │   ├── attendance/   # AttendanceClient, AdminAttendanceClient
-│   │   └── bookings/     # BookingClient
-│   ├── lib/              # mongodb, auth (JWT)
-│   ├── models/           # User, Inquiry, StarBooking, Attendance
-│   └── types/            # Shared TypeScript types
-└── package.json
-```
-
----
-
-## CI (GitHub Actions)
-
-Workflow **Next.js CI (pnpm)** runs on:
-
-- **Push:** `main`, `feature/**`
-- **Pull request:** target branch `main`
-
-Steps: checkout → Node 20 + pnpm cache → `pnpm install --frozen-lockfile` → `pnpm lint` → `pnpm build`.  
-Build uses dummy `MONGODB_URI` and `JWT_SECRET` so it does not need a real database.
+GitHub Actions: on push/PR to `main` — `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm build` (with dummy env for DB).
 
 ---
 
 ## License
 
-Private / as per your repository terms.
+Private / per repository terms.

@@ -14,36 +14,10 @@ import {
   LineChart,
   Line,
 } from "recharts";
-type Range = "daily" | "weekly" | "monthly" | "yearly";
+import type { PerformanceData, PerformanceRange } from "@/types/admin";
+import { useAdminPerformance } from "@/hooks/api";
 
-type PerformanceData = {
-  range: Range;
-  start: string;
-  end: string;
-  overview: {
-    totalInquiries: number;
-    totalBookings: number;
-    conversionRate: number;
-    topEmployee: { name: string; bookings: number } | null;
-  };
-  employees: {
-    userId: string;
-    name: string;
-    inquiries: number;
-    bookings: number;
-    conversionRate: number;
-  }[];
-  leaderboard: {
-    userId: string;
-    name: string;
-    inquiries: number;
-    bookings: number;
-    conversionRate: number;
-  }[];
-  timeSeries: { label: string; inquiries: number; bookings: number }[];
-};
-
-const RANGE_LABELS: Record<Range, string> = {
+const RANGE_LABELS: Record<PerformanceRange, string> = {
   daily: "Today",
   weekly: "Last 7 days",
   monthly: "Last 30 days",
@@ -51,42 +25,12 @@ const RANGE_LABELS: Record<Range, string> = {
 };
 
 export default function PerformanceClient() {
-  const [range, setRange] = useState<Range>("daily");
-  const [data, setData] = useState<PerformanceData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [range, setRange] = useState<PerformanceRange>("daily");
+  const { data, isLoading: loading, error } = useAdminPerformance(range);
 
   useEffect(() => {
-    let cancelled = false;
-    /* eslint-disable-next-line react-hooks/set-state-in-effect -- reset before fetch when range changes */
-    setLoading(true);
-    setError(null);
-    fetch(`/api/admin/performance?range=${range}`)
-      .then(async (res) => {
-        const json = await res.json();
-        if (!cancelled) {
-          if (!res.ok) {
-            setError(json.message || "Failed to load");
-            setData(null);
-            return;
-          }
-          setData(json);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError("Failed to load performance data");
-          setData(null);
-          toast.error("Failed to load performance data");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [range]);
+    if (error) toast.error(error.message);
+  }, [error]);
 
   if (loading && !data) {
     return (
@@ -99,7 +43,7 @@ export default function PerformanceClient() {
   if (error) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">
-        <p className="font-medium">{error}</p>
+        <p className="font-medium">{error?.message ?? "Failed to load"}</p>
       </div>
     );
   }
@@ -125,10 +69,10 @@ export default function PerformanceClient() {
           <select
             id="range"
             value={range}
-            onChange={(e) => setRange(e.target.value as Range)}
+            onChange={(e) => setRange(e.target.value as PerformanceRange)}
             className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
           >
-            {(Object.keys(RANGE_LABELS) as Range[]).map((r) => (
+            {(Object.keys(RANGE_LABELS) as PerformanceRange[]).map((r) => (
               <option key={r} value={r}>
                 {RANGE_LABELS[r]}
               </option>
