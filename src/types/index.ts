@@ -67,3 +67,23 @@ export type AttendanceRow = {
   photoUrl?: string;
 };
 
+export type {
+  GroupDashboardLead,
+  GroupDashboardFormValues,
+  GroupDashboardStatus,
+  GroupDashboardLocation,
+  GroupDashboardVisitStatus,
+  GroupDashboardReminderStatus,
+  GroupDashboardWhatsApp,
+  GroupDashboardFollowUpPriority,
+  GroupDashboardPopupAlert,
+} from "./groupDashboard";
+export {
+  GROUP_DASHBOARD_STATUS_OPTIONS,
+  GROUP_DASHBOARD_LOCATION_OPTIONS,
+  GROUP_DASHBOARD_VISIT_STATUS_OPTIONS,
+  GROUP_DASHBOARD_REMINDER_OPTIONS,
+  GROUP_DASHBOARD_WHATSAPP_OPTIONS,
+  GROUP_DASHBOARD_FOLLOW_UP_PRIORITY_OPTIONS,
+  GROUP_DASHBOARD_POPUP_ALERT_OPTIONS,
+} from "./groupDashboard";

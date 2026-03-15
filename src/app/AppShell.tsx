@@ -54,6 +54,7 @@ const sections: {
       items: [
         { href: "/bookings", label: "Bookings", icon: <TicketPercent className="h-4 w-4" /> },
         { href: "/bookings/group", label: "Group bookings", icon: <UsersRound className="h-4 w-4" /> },
+        { href: "/bookings/group/dashboard", label: "Group dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
       ],
     },
     {

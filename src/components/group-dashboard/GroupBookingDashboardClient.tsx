@@ -1,0 +1,127 @@
+"use client";
+
+import Link from "next/link";
+import { useState, useMemo } from "react";
+import {
+  dashboardKPI,
+  dashboardAlerts,
+  dashboardTabs,
+  masterGroupRows,
+  todayFollowUpRows,
+  visitLeadRows,
+  dueIn15Item,
+  liveActivities,
+} from "@/data/groupBookingDashboardData";
+import type { MasterGroupRow } from "@/data/groupBookingDashboardData";
+import { useGroupDashboardLeads } from "@/hooks/api";
+import GroupDashboardKPICards from "./GroupDashboardKPICards";
+import GroupDashboardAlerts from "./GroupDashboardAlerts";
+import GroupDashboardTabs from "./GroupDashboardTabs";
+import MasterGroupBookingTable from "./MasterGroupBookingTable";
+import TodayFollowUpsTable from "./TodayFollowUpsTable";
+import VisitLeadsTable from "./VisitLeadsTable";
+import DueIn15MinutesCard from "./DueIn15MinutesCard";
+import LiveActivityMonitor from "./LiveActivityMonitor";
+
+export default function GroupBookingDashboardClient() {
+  const [activeTab, setActiveTab] = useState("control-tower");
+  const [alerts, setAlerts] = useState(dashboardAlerts);
+  const { data: apiLeads } = useGroupDashboardLeads();
+
+  const masterRowsFromApi: MasterGroupRow[] = useMemo(() => {
+    return apiLeads.map((row) => ({
+      id: row._id,
+      dateAdded: row.dateAdded ?? "—",
+      whatsapp: row.whatsapp,
+      customerName: row.customerName,
+      phone: row.phone,
+      groupSize: row.groupSize,
+      location: row.location,
+      travelDate: row.travelDate ?? "—",
+      bookingStatus: row.bookingStatus,
+      visitReminderStatus: row.visitReminderStatus ?? row.reminderVisitStatus,
+      lastFollowUpDate: row.lastFollowUpDate ?? "—",
+      nextFollowUpDate: row.nextFollowUpDate ?? "—",
+    }));
+  }, [apiLeads]);
+
+  const masterRows =
+    apiLeads.length > 0 ? masterRowsFromApi : masterGroupRows;
+
+  const handleDismissAlert = (id: string) => {
+    setAlerts((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {/* Header row: title left, follow-up & reminder alerts top right */}
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <header className="min-w-0 flex-1">
+            <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
+              GROUP BOOKING CONTROL TOWER
+            </h1>
+            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+              Offline HTML view for group inquiry, follow-up, visit tracking,
+              reminders, and WhatsApp-wise booking management.
+            </p>
+          </header>
+          {alerts.length > 0 && (
+            <div className="flex shrink-0 flex-col gap-3 sm:ml-4">
+              <GroupDashboardAlerts
+                alerts={alerts}
+                onDismiss={handleDismissAlert}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* KPI Cards */}
+        <div className="mb-6">
+          <GroupDashboardKPICards metrics={dashboardKPI} />
+        </div>
+
+        {/* Tabs */}
+        <div className="mb-4">
+          <GroupDashboardTabs
+            tabs={dashboardTabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        </div>
+
+        {/* Main content: table + Add lead link in master section */}
+        <div className="flex flex-col gap-6">
+          <div className="min-w-0 flex-1 space-y-6">
+            {activeTab === "control-tower" && (
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {apiLeads.length > 0
+                      ? `${apiLeads.length} lead(s) from database`
+                      : "Sample data below. Add a lead to save to the database."}
+                  </span>
+                  <Link
+                    href="/bookings/group/dashboard/lead/new"
+                    className="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                  >
+                    + Add group lead
+                  </Link>
+                </div>
+                <MasterGroupBookingTable rows={masterRows} />
+              </div>
+            )}
+            <div className="flex justify-between">
+              <TodayFollowUpsTable rows={todayFollowUpRows} />
+              <LiveActivityMonitor activities={liveActivities} />
+            </div>
+            <div className="flex justify-between">
+              <VisitLeadsTable rows={visitLeadRows} />
+              <DueIn15MinutesCard item={dueIn15Item} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
