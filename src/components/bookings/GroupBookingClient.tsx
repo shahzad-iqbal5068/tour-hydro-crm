@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { useGroupBookings } from "@/hooks/api";
+import { PageLoader } from "@/components/ui/PageLoader";
 import GroupBookingForm, {
   getDefaultGroupBookingFormValues,
   type GroupBookingFormValues,
@@ -108,13 +109,22 @@ export default function GroupBookingClient() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-7xl">
+        <Toaster position="top-right" />
+        <PageLoader message="Loading group bookings…" fullScreen />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row">
       <Toaster position="top-right" />
 
       <GroupBookingTable
         data={rows}
-        isLoading={loading}
+        isLoading={false}
         onNewBooking={handleNew}
         onEdit={handleEdit}
         onDeleteClick={openDeleteModal}

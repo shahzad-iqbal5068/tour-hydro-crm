@@ -1,140 +1,69 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetcher, apiMutation } from "@/lib/api";
-
-type StarBookingRow = {
-  _id: string;
-  category: "4-5" | "3";
-  date?: string | null;
-  time: string;
-  pax: number;
-  guestName: string;
-  phone: string;
-  collectionAmount: number;
-  paid: number;
-  balance: number;
-  deck?: string;
-  remarks?: string;
-  callingRemarks?: string;
-  followUpDate?: string | null;
-  followUpSent?: boolean;
-  followUpNote?: string | null;
-};
+import type { StarBookingRow } from "@/types/booking";
+import { queryKeys } from "./queryKeys";
+import { DEFAULT_STALE_MS, normalizeQueryError, wrapMutationResult } from "./queryHelpers";
 
 type StarBookingsResponse = { data: StarBookingRow[] };
 
-function usePendingMutation() {
-  const [pendingId, setPendingId] = useState<string | null>(null);
-  return {
-    get variables() {
-      return pendingId ?? undefined;
-    },
-    get isPending() {
-      return !!pendingId;
-    },
-    run: async <T>(id: string, fn: () => Promise<T>) => {
-      setPendingId(id);
-      try {
-        return await fn();
-      } finally {
-        setPendingId(null);
-      }
-    },
-  };
-}
-
 export function useStarBookings(category?: "4-5" | "3" | "all") {
   const effectiveCategory = category === "all" ? undefined : category;
-  const [data, setData] = useState<StarBookingRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchData = useCallback(async () => {
-    setError(null);
-    setIsLoading(true);
-    try {
+  const {
+    data: response,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: queryKeys.starBookings(effectiveCategory),
+    queryFn: async () => {
       const url = effectiveCategory
         ? `/api/star-bookings?category=${effectiveCategory}`
         : "/api/star-bookings";
-      const res = await apiFetcher<StarBookingsResponse>(url);
-      setData(res?.data ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [effectiveCategory]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const invalidate = useCallback(() => fetchData(), [fetchData]);
-
-  const deletePending = usePendingMutation();
-  const followUpPending = usePendingMutation();
-
-  const createMutation = {
-    mutateAsync: (body: Record<string, unknown>) =>
-      apiMutation<StarBookingRow>("/api/star-bookings", "POST", body).then(() =>
-        invalidate()
-      ),
-    isPending: false,
-  };
-
-  const updateMutation = {
-    mutateAsync: ({
-      id,
-      body,
-    }: { id: string; body: Record<string, unknown> }) =>
-      apiMutation<StarBookingRow>(`/api/star-bookings/${id}`, "PUT", body).then(
-        () => invalidate()
-      ),
-    isPending: false,
-  };
-
-  const deleteMutation = {
-    get variables() {
-      return deletePending.variables;
+      return apiFetcher<StarBookingsResponse>(url);
     },
-    get isPending() {
-      return deletePending.isPending;
-    },
-    mutateAsync: (id: string) =>
-      deletePending.run(id, () =>
-        apiMutation<{ message: string }>(
-          `/api/star-bookings/${id}`,
-          "DELETE"
-        ).then(() => invalidate())
-      ),
-  };
+    staleTime: DEFAULT_STALE_MS,
+  });
 
-  const followUpDoneMutation = {
-    get variables() {
-      return followUpPending.variables;
-    },
-    get isPending() {
-      return followUpPending.isPending;
-    },
-    mutateAsync: (id: string) =>
-      followUpPending.run(id, () =>
-        apiMutation<StarBookingRow>(
-          `/api/star-bookings/${id}/followup`,
-          "PUT",
-          {}
-        ).then(() => invalidate())
-      ),
-  };
+  const data = response?.data ?? [];
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: queryKeys.starBookings(effectiveCategory) });
+
+  const createMutation = useMutation({
+    mutationFn: (body: Record<string, unknown>) =>
+      apiMutation<StarBookingRow>("/api/star-bookings", "POST", body),
+    onSuccess: () => invalidate(),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Record<string, unknown> }) =>
+      apiMutation<StarBookingRow>(`/api/star-bookings/${id}`, "PUT", body),
+    onSuccess: () => invalidate(),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiMutation<{ message: string }>(`/api/star-bookings/${id}`, "DELETE"),
+    onSuccess: () => invalidate(),
+  });
+
+  const followUpDoneMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiMutation<StarBookingRow>(`/api/star-bookings/${id}/followup`, "PUT", {}),
+    onSuccess: () => invalidate(),
+  });
 
   return {
     data,
     isLoading,
-    error,
+    error: normalizeQueryError(error),
     invalidate,
-    createMutation,
-    updateMutation,
-    deleteMutation,
-    followUpDoneMutation,
+    createMutation: wrapMutationResult(createMutation),
+    updateMutation: wrapMutationResult(updateMutation),
+    deleteMutation: wrapMutationResult(deleteMutation, { includeVariables: true }),
+    followUpDoneMutation: wrapMutationResult(followUpDoneMutation, { includeVariables: true }),
   };
 }

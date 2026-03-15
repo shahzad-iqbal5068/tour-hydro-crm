@@ -1,80 +1,65 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetcher, apiMutation } from "@/lib/api";
+import type { FollowUpRow } from "@/types/followup";
+import { queryKeys } from "./queryKeys";
+import { DEFAULT_STALE_MS, normalizeQueryError, wrapMutationResult } from "./queryHelpers";
 
-export type FollowUpRow = {
-  _id: string;
-  category: "4-5" | "3";
-  time: string;
-  guestName: string;
-  phone: string;
-  followUpDate?: string | null;
-  followUpNote?: string | null;
-  followUpSent?: boolean;
-};
+function buildFollowupsUrl(date: string, category?: string): string {
+  const params = new URLSearchParams({ date });
+  if (category) params.set("category", category);
+  return `/api/followups?${params.toString()}`;
+}
 
 export function useFollowups(date: string, category?: "all" | "4-5" | "3") {
   const categoryParam = category === "all" || !category ? undefined : category;
-  const [data, setData] = useState<FollowUpRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchData = useCallback(() => {
-    if (!date) {
-      setData([]);
-      setIsLoading(false);
-      return;
-    }
-    const params = new URLSearchParams({ date });
-    if (categoryParam) params.set("category", categoryParam);
-    setError(null);
-    setIsLoading(true);
-    apiFetcher<FollowUpRow[]>(`/api/followups?${params}`)
-      .then((res) => setData(Array.isArray(res) ? res : []))
-      .catch((err) => setError(err instanceof Error ? err : new Error(String(err))))
-      .finally(() => setIsLoading(false));
-  }, [date, categoryParam]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const invalidate = useCallback(() => fetchData(), [fetchData]);
-
-  const [followUpPendingId, setFollowUpPendingId] = useState<string | null>(null);
-  const followUpDoneMutation = {
-    get variables() {
-      return followUpPendingId ?? undefined;
+  const {
+    data: rawData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: queryKeys.followups(date, categoryParam),
+    queryFn: async () => {
+      const res = await apiFetcher<FollowUpRow[]>(buildFollowupsUrl(date, categoryParam));
+      return Array.isArray(res) ? res : [];
     },
-    get isPending() {
-      return !!followUpPendingId;
-    },
-    mutateAsync: (id: string) => {
-      setFollowUpPendingId(id);
-      return apiMutation<FollowUpRow>(`/api/star-bookings/${id}/followup`, "PUT", {})
-        .then(() => invalidate())
-        .finally(() => setFollowUpPendingId(null));
-    },
-  };
+    enabled: !!date,
+    staleTime: DEFAULT_STALE_MS,
+  });
+
+  const data = rawData ?? [];
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: queryKeys.followups(date, categoryParam) });
+
+  const followUpDoneMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiMutation<FollowUpRow>(`/api/star-bookings/${id}/followup`, "PUT", {}),
+    onSuccess: () => invalidate(),
+  });
 
   return {
     data,
     isLoading,
-    error,
+    error: normalizeQueryError(error),
     invalidate,
-    followUpDoneMutation,
+    followUpDoneMutation: wrapMutationResult(followUpDoneMutation, {
+      includeVariables: true,
+    }),
   };
 }
 
 export function useFollowupsToday() {
-  const [data, setData] = useState<FollowUpRow[]>([]);
+  const { data: rawData } = useQuery({
+    queryKey: queryKeys.followupsToday(),
+    queryFn: async () => {
+      const res = await apiFetcher<FollowUpRow[]>("/api/followups/today");
+      return Array.isArray(res) ? res : [];
+    },
+    staleTime: DEFAULT_STALE_MS,
+  });
 
-  useEffect(() => {
-    apiFetcher<FollowUpRow[]>("/api/followups/today")
-      .then((res) => setData(Array.isArray(res) ? res : []))
-      .catch(() => setData([]));
-  }, []);
-
-  return { data };
+  return { data: rawData ?? [] };
 }

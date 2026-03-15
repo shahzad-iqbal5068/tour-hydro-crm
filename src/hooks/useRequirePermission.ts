@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { hasPermission, Permission, type PermissionKey } from "@/lib/permissions-config";
+import { authGetMe } from "@/lib/api";
 
 /**
  * On mount, fetches current user and redirects to / if they don't have the required permission.
@@ -21,11 +22,9 @@ export function useRequirePermission(permission: PermissionKey): {
 
     async function check() {
       try {
-        const res = await fetch("/api/auth/me");
-        const data = await res.json();
+        const user = await authGetMe();
         if (cancelled) return;
-        const role = data?.user?.role;
-        if (role && hasPermission(role, permission)) {
+        if (user?.role && hasPermission(user.role, permission)) {
           setAllowed(true);
         } else {
           router.replace("/");

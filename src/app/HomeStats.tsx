@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useDashboardStats, useFollowupsToday, type Period } from "@/hooks/api";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 const PERIOD_LABELS: Record<Period, string> = {
   today: "Today",
@@ -69,16 +70,18 @@ export default function HomeStats() {
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {loading ? (
+          <div className="col-span-full">
+            <PageLoader message="Loading stats…" fullScreen={false} />
+          </div>
+        ) : (
+          <>
         <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
           <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             Inquiries
           </p>
-          {loading ? (
-            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>
-          ) : error ? (
-            <p className="mt-2 text-sm text-red-500 dark:text-red-400">
-              {error}
-            </p>
+          {error ? (
+            <p className="mt-2 text-sm text-red-500 dark:text-red-400">{error}</p>
           ) : (
             <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
               {inquiries}
@@ -93,9 +96,7 @@ export default function HomeStats() {
           <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             Bookings
           </p>
-          {loading ? (
-            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>
-          ) : error ? (
+          {error ? (
             <p className="mt-2 text-sm text-red-500 dark:text-red-400">
               {error}
             </p>
@@ -155,6 +156,8 @@ export default function HomeStats() {
             Across all cruise packages
           </p>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

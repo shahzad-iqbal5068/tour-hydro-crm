@@ -12,7 +12,7 @@ function todayKey() {
   return `${year}-${month}-${day}`;
 }
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
@@ -26,18 +26,25 @@ export async function POST(_request: NextRequest) {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
+    const body = (await request.json().catch(() => ({}))) as {
+      location?: string;
+      photoUrl?: string;
+    };
+
     await connectToDatabase();
     const dateKey = todayKey();
 
     const now = new Date();
 
+    const update: Record<string, unknown> = {
+      checkOutAt: now,
+    };
+    if (body.location) update.location = body.location;
+    if (body.photoUrl) update.photoUrl = body.photoUrl;
+
     const attendance = await Attendance.findOneAndUpdate(
       { user: jwtUser.id, date: dateKey },
-      {
-        $set: {
-          checkOutAt: now,
-        },
-      },
+      { $set: update },
       { new: true }
     ).lean();
 
@@ -54,6 +61,8 @@ export async function POST(_request: NextRequest) {
         date: attendance.date,
         checkInAt: attendance.checkInAt,
         checkOutAt: attendance.checkOutAt,
+        location: attendance.location,
+        photoUrl: attendance.photoUrl,
       },
       { status: 200 }
     );

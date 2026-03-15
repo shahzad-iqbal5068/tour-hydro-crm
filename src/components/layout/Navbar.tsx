@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AuthUser } from "@/types";
+import { authLogout } from "@/lib/api";
 import { ensureImageUrl } from "@/lib/imageUrl";
 import { ProfileInfoModal, ProfileImageModal } from "./ProfileModal";
 
@@ -29,7 +30,7 @@ export function Navbar({
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await authLogout();
     } catch {
       // ignore network error, we'll still redirect
     }

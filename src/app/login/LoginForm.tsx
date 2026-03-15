@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Toaster, toast } from "react-hot-toast";
 import type { LoginValues } from "@/types";
+import { authLogin } from "@/lib/api";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export function LoginForm() {
@@ -18,27 +19,12 @@ export function LoginForm() {
 
   const onSubmit = async (values: LoginValues) => {
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.message || "Login failed");
-        return;
-      }
-
+      await authLogin(values);
       toast.success("Logged in successfully");
       router.replace("/");
     } catch (error) {
       console.error(error);
-      toast.error("Login failed");
+      toast.error(error instanceof Error ? error.message : "Login failed");
     }
   };
 

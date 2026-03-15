@@ -74,6 +74,33 @@ export const GROUP_DASHBOARD_POPUP_ALERT_OPTIONS = ["Pending", "Done"] as const;
 export type GroupDashboardPopupAlert =
   (typeof GROUP_DASHBOARD_POPUP_ALERT_OPTIONS)[number];
 
+/** Row shape from GET /api/group-dashboard-leads (list item) */
+export type GroupDashboardLeadRow = {
+  _id: string;
+  dateAdded?: string;
+  whatsapp: string;
+  customerName: string;
+  phone: string;
+  groupSize: number;
+  location: string;
+  travelDate: string;
+  bookingStatus: string;
+  visitReminderStatus?: string;
+  reminderVisitStatus?: string;
+  visitStatus?: string;
+  lastFollowUpDate?: string;
+  nextFollowUpDate?: string;
+  nextFollowUpTime?: string;
+  followUpPriority?: string;
+  assignedAgent?: string;
+  updatedByEmail?: string;
+  updateTimestamp?: string;
+  reminderDone?: boolean;
+  reminderTriggered?: boolean;
+  popupAlertStatus?: string;
+  notes?: string;
+};
+
 /** API/DB document shape (with _id and timestamps) */
 export type GroupDashboardLead = {
   _id: string;

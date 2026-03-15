@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiFetcher } from "@/lib/api";
+import { queryKeys } from "./queryKeys";
+import { DEFAULT_STALE_MS, normalizeQueryError } from "./queryHelpers";
 
 export type Period = "today" | "weekly" | "monthly" | "yearly";
 
@@ -13,32 +15,15 @@ type DashboardStats = {
 };
 
 export function useDashboardStats(period: Period) {
-  const [data, setData] = useState<DashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.dashboardStats(period),
+    queryFn: () => apiFetcher<DashboardStats>(`/api/dashboard/stats?period=${period}`),
+    staleTime: DEFAULT_STALE_MS,
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-    /* eslint-disable-next-line react-hooks/set-state-in-effect -- reset state when period changes before fetch */
-    setError(null);
-    setIsLoading(true);
-    apiFetcher<DashboardStats>(`/api/dashboard/stats?period=${period}`)
-      .then((res) => {
-        if (!cancelled) {
-          setData(res);
-          setError(null);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)));
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [period]);
-
-  return { data, isLoading, error };
+  return {
+    data: data ?? null,
+    isLoading,
+    error: normalizeQueryError(error),
+  };
 }

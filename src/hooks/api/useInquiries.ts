@@ -1,122 +1,91 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetcher, apiMutation } from "@/lib/api";
+import { queryKeys } from "./queryKeys";
+import { DEFAULT_STALE_MS, normalizeQueryError, SHORT_STALE_MS, wrapMutationResult } from "./queryHelpers";
 import type { InquiryRow, InquiryFormValues } from "@/types";
 
 type InquiriesResponse = { data: InquiryRow[]; total?: number };
 
+async function fetchInquiries(): Promise<InquiriesResponse> {
+  const params = new URLSearchParams({
+    page: "1",
+    limit: "1000",
+    sortDate: "desc",
+  });
+  return apiFetcher<InquiriesResponse>(`/api/inquiries?${params}`);
+}
+
 export function useInquiries() {
-  const [data, setData] = useState<InquiryRow[]>([]);
-  const [total, setTotal] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchData = useCallback(async () => {
-    setError(null);
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: "1",
-        limit: "1000",
-        sortDate: "desc",
-      });
-      const res = await apiFetcher<InquiriesResponse>(`/api/inquiries?${params}`);
-      setData(res?.data ?? []);
-      setTotal(res?.total ?? 0);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const {
+    data: response,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: queryKeys.inquiries(),
+    queryFn: fetchInquiries,
+    staleTime: DEFAULT_STALE_MS,
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const data = response?.data ?? [];
+  const total = response?.total ?? 0;
 
-  const invalidate = useCallback(() => fetchData(), [fetchData]);
+  const createMutation = useMutation({
+    mutationFn: (body: Partial<InquiryFormValues> & {
+      date: string;
+      shift: string;
+      whatsappName: string;
+    }) => apiMutation<InquiryRow>("/api/inquiries", "POST", body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.inquiries() }),
+  });
 
-  const [deletePendingId, setDeletePendingId] = useState<string | null>(null);
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Partial<InquiryFormValues> }) =>
+      apiMutation<InquiryRow>(`/api/inquiries/${id}`, "PUT", body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.inquiries() }),
+  });
 
-  const createMutation = {
-    mutateAsync: (
-      body: Partial<InquiryFormValues> & {
-        date: string;
-        shift: string;
-        whatsappName: string;
-      }
-    ) =>
-      apiMutation<InquiryRow>("/api/inquiries", "POST", body).then(() =>
-        invalidate()
-      ),
-    isPending: false,
-  };
-
-  const updateMutation = {
-    mutateAsync: ({
-      id,
-      body,
-    }: { id: string; body: Partial<InquiryFormValues> }) =>
-      apiMutation<InquiryRow>(`/api/inquiries/${id}`, "PUT", body).then(() =>
-        invalidate()
-      ),
-    isPending: false,
-  };
-
-  const deleteMutation = {
-    get isPending() {
-      return !!deletePendingId;
-    },
-    mutateAsync: (id: string) => {
-      setDeletePendingId(id);
-      return apiMutation<{ message: string }>(`/api/inquiries/${id}`, "DELETE")
-        .then(() => invalidate())
-        .finally(() => setDeletePendingId(null));
-    },
-  };
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiMutation<{ message: string }>(`/api/inquiries/${id}`, "DELETE"),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.inquiries() }),
+  });
 
   return {
     data,
     total,
     isLoading,
-    error,
-    invalidate,
-    createMutation,
-    updateMutation,
-    deleteMutation,
+    error: error instanceof Error ? error : null,
+    invalidate: () => queryClient.invalidateQueries({ queryKey: queryKeys.inquiries() }),
+    createMutation: {
+      mutateAsync: createMutation.mutateAsync,
+      isPending: createMutation.isPending,
+    },
+    updateMutation: {
+      mutateAsync: updateMutation.mutateAsync,
+      isPending: updateMutation.isPending,
+    },
+    deleteMutation: {
+      mutateAsync: deleteMutation.mutateAsync,
+      isPending: deleteMutation.isPending,
+    },
   };
 }
 
 export function useInquiry(id: string | null) {
-  const [data, setData] = useState<InquiryRow | null>(null);
-  const [isLoading, setIsLoading] = useState(!!id);
-  const [error, setError] = useState<Error | null>(null);
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.inquiry(id),
+    queryFn: () => apiFetcher<InquiryRow>(`/api/inquiries/${id}`),
+    enabled: !!id,
+    staleTime: SHORT_STALE_MS,
+  });
 
-  useEffect(() => {
-    if (!id) {
-      /* eslint-disable-next-line react-hooks/set-state-in-effect -- clear state when id is null */
-      setData(null);
-      setIsLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setError(null);
-    setIsLoading(true);
-    apiFetcher<InquiryRow>(`/api/inquiries/${id}`)
-      .then((res) => {
-        if (!cancelled) setData(res);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)));
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
-
-  return { data, isLoading, error };
+  return {
+    data: data ?? null,
+    isLoading,
+    error: normalizeQueryError(error),
+  };
 }

@@ -8,8 +8,20 @@ export type { SectionKey } from "./layout";
 export type { AuthUser, Role, UserRow } from "./user";
 export type { LoginValues } from "./auth";
 export type { InquiryRow, InquiryFormValues } from "./inquiry";
-export type { AttendanceRow } from "./attendance";
-export type { StarBookingCategory } from "./booking";
+export type {
+  AttendanceRow,
+  AttendanceMineResponse,
+  AttendanceMineRecord,
+  AttendanceHistoryItem,
+  AttendanceListParams,
+} from "./attendance";
+export type {
+  StarBookingCategory,
+  StarBookingRow,
+  GroupBookingRow,
+} from "./booking";
+export type { FollowUpRow } from "./followup";
+export type { PerformanceData, PerformanceRange } from "./admin";
 
 export type {
   GroupDashboardLead,
@@ -21,6 +33,7 @@ export type {
   GroupDashboardWhatsApp,
   GroupDashboardFollowUpPriority,
   GroupDashboardPopupAlert,
+  GroupDashboardLeadRow,
 } from "./groupDashboard";
 export {
   GROUP_DASHBOARD_STATUS_OPTIONS,
