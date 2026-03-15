@@ -56,8 +56,8 @@ export default function GroupBookingDashboardClient() {
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Header row: title left, follow-up & reminder alerts top right */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <header className="min-w-0 flex-1">
+        <div className="mb-6 relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <header className="min-w-full flex-1">
             <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
               GROUP BOOKING CONTROL TOWER
             </h1>
@@ -67,7 +67,9 @@ export default function GroupBookingDashboardClient() {
             </p>
           </header>
           {alerts.length > 0 && (
-            <div className="flex shrink-0 flex-col gap-3 sm:ml-4">
+            // <div className="flex shrink-0 flex-col gap-3 sm:ml-4">
+            <div className="absolute right-0 top-0 flex flex-col gap-3">
+
               <GroupDashboardAlerts
                 alerts={alerts}
                 onDismiss={handleDismissAlert}
@@ -111,13 +113,21 @@ export default function GroupBookingDashboardClient() {
                 <MasterGroupBookingTable rows={masterRows} />
               </div>
             )}
-            <div className="flex justify-between">
-              <TodayFollowUpsTable rows={todayFollowUpRows} />
-              <LiveActivityMonitor activities={liveActivities} />
+            <div className="flex flex-col gap-6 lg:flex-row lg:justify-between lg:items-start">
+              <div className="min-w-0 flex-1 lg:min-w-0">
+                <TodayFollowUpsTable rows={todayFollowUpRows} />
+              </div>
+              <div className="min-w-0 shrink-0 lg:w-80">
+                <LiveActivityMonitor activities={liveActivities} />
+              </div>
             </div>
-            <div className="flex justify-between">
-              <VisitLeadsTable rows={visitLeadRows} />
-              <DueIn15MinutesCard item={dueIn15Item} />
+            <div className="flex flex-col gap-6 lg:flex-row lg:justify-between lg:items-start">
+              <div className="min-w-0 flex-1 lg:min-w-0">
+                <VisitLeadsTable rows={visitLeadRows} />
+              </div>
+              <div className="min-w-0 shrink-0 lg:w-80">
+                <DueIn15MinutesCard item={dueIn15Item} />
+              </div>
             </div>
           </div>
         </div>

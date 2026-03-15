@@ -1,71 +1,15 @@
-export type SectionKey =
-  | "dashboard"
-  | "inqueries"
-  | "bookings"
-  | "followups"
-  | "admin"
-  | "attendance";
+/**
+ * Central types barrel. Prefer importing from specific files for clarity:
+ * - @/types/user, @/types/inquiry, @/types/booking, etc.
+ * This file re-exports everything for backward compatibility.
+ */
 
-export type AuthUser = {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  avatarUrl?: string;
-};
-
-export type Role =
-  | "SUPER_ADMIN"
-  | "ADMIN"
-  | "MANAGER"
-  | "CEO"
-  | "SALES_EXEC"
-  | "CALL_PERSON";
-
-export type UserRow = {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  createdAt?: string;
-  avatarUrl?: string;
-};
-
-export type InquiryRow = {
-  _id: string;
-  date: string;
-  shift: string;
-  whatsappName: string;
-  remarks?: string;
-  name?: string | null;
-  userId?: string | null;
-};
-
-export type InquiryFormValues = {
-  date: string;
-  shift: string;
-  whatsappName: string;
-  remarks: string;
-  userId: string;
-};
-
-export type LoginValues = {
-  email: string;
-  password: string;
-};
-
-export type AttendanceRow = {
-  _id: string;
-  userId: string;
-  name: string;
-  email: string;
-  role: Role;
-  date: string; // ISO date (yyyy-mm-dd)
-  checkInAt?: string; // ISO datetime
-  checkOutAt?: string; // ISO datetime
-  location?: string;
-  photoUrl?: string;
-};
+export type { SectionKey } from "./layout";
+export type { AuthUser, Role, UserRow } from "./user";
+export type { LoginValues } from "./auth";
+export type { InquiryRow, InquiryFormValues } from "./inquiry";
+export type { AttendanceRow } from "./attendance";
+export type { StarBookingCategory } from "./booking";
 
 export type {
   GroupDashboardLead,
