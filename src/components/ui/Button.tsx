@@ -2,8 +2,8 @@
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "tertiary";
-type ButtonSize = "sm" | "md";
+export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
+export type ButtonSize = "sm" | "md" | "lg";
 
 export type ButtonProps = {
   variant?: ButtonVariant;
@@ -11,22 +11,27 @@ export type ButtonProps = {
   iconLeft?: ReactNode;
   iconRight?: ReactNode;
   loading?: boolean;
+  fullWidth?: boolean;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const baseClasses =
-  "inline-flex items-center justify-center rounded-md text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-70";
+  "inline-flex items-center justify-center rounded-lg text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60";
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200",
+  primary:
+    "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200",
   secondary:
-    "border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800",
-  tertiary:
-    "border border-transparent bg-transparent text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-900",
+    "border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700",
+  outline:
+    "border border-zinc-300 bg-transparent text-zinc-800 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800",
+  ghost:
+    "bg-transparent text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5",
-  md: "px-4 py-2",
+  sm: "px-3 py-1.5 gap-1.5",
+  md: "px-4 py-2 gap-2",
+  lg: "px-5 py-2.5 gap-2 text-sm",
 };
 
 export function Button({
@@ -35,21 +40,25 @@ export function Button({
   iconLeft,
   iconRight,
   loading,
+  fullWidth,
   className = "",
   children,
+  disabled,
   ...rest
 }: ButtonProps) {
-  const content = loading ? "Loading..." : children;
+  const isDisabled = disabled || loading;
+  const content = loading ? "Loading…" : children;
 
   return (
     <button
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      type={rest.type ?? "button"}
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${fullWidth ? "w-full" : ""} ${className}`}
+      disabled={isDisabled}
       {...rest}
     >
-      {iconLeft && <span className="mr-1.5 text-[11px]">{iconLeft}</span>}
+      {iconLeft && !loading && <span className="shrink-0">{iconLeft}</span>}
       <span>{content}</span>
-      {iconRight && <span className="ml-1.5 text-[11px]">{iconRight}</span>}
+      {iconRight && !loading && <span className="shrink-0">{iconRight}</span>}
     </button>
   );
 }
-

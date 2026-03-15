@@ -3,6 +3,8 @@
  * Used by group booking dashboard page and its components.
  */
 
+import { GROUP_DASHBOARD_WHATSAPP_OPTIONS } from "@/types/groupDashboard";
+
 export type KPIMetric = {
   label: string;
   value: number;
@@ -19,30 +21,32 @@ export type AlertItem = {
 
 export type MasterGroupRow = {
   id: string;
-  dateAdded: string;
+  inquiryDate: string;
   whatsapp: string;
+  assignedPerson: string;
+  confirmBookingDate: string;
   customerName: string;
-  phone: string;
-  groupSize: number;
+  contact: string;
+  numberOfPersons: number;
+  cruiseName: string;
+  slotTiming: string;
   location: string;
-  travelDate: string;
+  groupNo: string;
   bookingStatus: string;
-  visitReminderStatus?: string;
   lastFollowUpDate: string;
-  nextFollowUpDate: string;
+  remarks: string;
+  callingDate: string;
+  totalAmount: number | string;
+  advancePaid: number | string;
+  remainingAmount: number | string;
 };
 
 /** All status options for the Status dropdown */
 export const STATUS_FILTER_OPTIONS = [
   "All Statuses",
-  "New Inquiry",
-  "Follow-Up Pending",
-  "Follow-Up Done",
-  "Waiting for Customer",
-  "Confirmed",
-  "Cancelled",
-  "No Reply",
-  "Lost",
+  "Done",
+  "Not done",
+  "Custom",
 ] as const;
 
 /** All visit/reminder options for the Visit / Reminder dropdown */
@@ -130,115 +134,171 @@ export const dashboardAlerts: AlertItem[] = [
 export const masterGroupRows: MasterGroupRow[] = [
   {
     id: "1",
-    dateAdded: "15 Mar 2026",
-    whatsapp: "WA-4",
+    inquiryDate: "15 Mar 2026",
+    whatsapp: "Fun Factory",
+    assignedPerson: "Samia",
+    confirmBookingDate: "24 Mar 2026",
     customerName: "Farhan Traders",
-    phone: "+9715xxxx",
-    groupSize: 22,
+    contact: "+9715xxxx",
+    numberOfPersons: 22,
+    cruiseName: "Dhow cruise trip",
+    slotTiming: "6:30 PM",
     location: "Canal",
-    travelDate: "24 Mar 2026",
-    bookingStatus: "Follow-Up Pending",
-    visitReminderStatus: "Customer Coming",
+    groupNo: "G001",
+    bookingStatus: "Not done",
     lastFollowUpDate: "15 Mar 2026",
-    nextFollowUpDate: "15 Mar 2026",
+    remarks: "Customer Coming",
+    callingDate: "16 Mar 2026",
+    totalAmount: 4500,
+    advancePaid: 1000,
+    remainingAmount: 3500,
   },
   {
     id: "2",
-    dateAdded: "15 Mar 2026",
-    whatsapp: "WA-2",
+    inquiryDate: "15 Mar 2026",
+    whatsapp: "Blue world",
+    assignedPerson: "Mariam",
+    confirmBookingDate: "29 Mar 2026",
     customerName: "Naveed Events",
-    phone: "+9715xxxx",
-    groupSize: 40,
-    location: "Yacht",
-    travelDate: "29 Mar 2026",
-    bookingStatus: "Follow-Up Pending",
-    visitReminderStatus: "Visit Tomorrow",
+    contact: "+9715xxxx",
+    numberOfPersons: 40,
+    cruiseName: "Dubai Deals",
+    slotTiming: "7:00 PM",
+    location: "Private yacht",
+    groupNo: "G002",
+    bookingStatus: "Not done",
     lastFollowUpDate: "15 Mar 2026",
-    nextFollowUpDate: "16 Mar 2026",
+    remarks: "Visit Tomorrow",
+    callingDate: "16 Mar 2026",
+    totalAmount: 12000,
+    advancePaid: 3000,
+    remainingAmount: 9000,
   },
   {
     id: "3",
-    dateAdded: "15 Mar 2026",
-    whatsapp: "WA-3",
+    inquiryDate: "15 Mar 2026",
+    whatsapp: "Dhow Cruise (Ocean Leopard)",
+    assignedPerson: "Hina",
+    confirmBookingDate: "21 Mar 2026",
     customerName: "Bilal Group",
-    phone: "+9715xxxx",
-    groupSize: 18,
+    contact: "+9715xxxx",
+    numberOfPersons: 18,
+    cruiseName: "Ocean Leopard",
+    slotTiming: "6:00 PM",
     location: "Marina",
-    travelDate: "21 Mar 2026",
-    bookingStatus: "Waiting for Customer",
-    visitReminderStatus: "Visit Today",
+    groupNo: "G003",
+    bookingStatus: "Not done",
     lastFollowUpDate: "15 Mar 2026",
-    nextFollowUpDate: "15 Mar 2026",
+    remarks: "Visit Today",
+    callingDate: "15 Mar 2026",
+    totalAmount: 2800,
+    advancePaid: 500,
+    remainingAmount: 2300,
   },
   {
     id: "4",
-    dateAdded: "15 Mar 2026",
-    whatsapp: "WA-1",
+    inquiryDate: "15 Mar 2026",
+    whatsapp: "Dubai Deals",
+    assignedPerson: "Areeba",
+    confirmBookingDate: "19 Mar 2026",
     customerName: "Rashid Khan",
-    phone: "+9715xxxx",
-    groupSize: 12,
+    contact: "+9715xxxx",
+    numberOfPersons: 12,
+    cruiseName: "Dhow cruise trip",
+    slotTiming: "8:00 PM",
     location: "Canal",
-    travelDate: "19 Mar 2026",
-    bookingStatus: "No Reply",
-    visitReminderStatus: "No Visit",
+    groupNo: "G004",
+    bookingStatus: "Custom",
     lastFollowUpDate: "15 Mar 2026",
-    nextFollowUpDate: "16 Mar 2026",
+    remarks: "No Visit",
+    callingDate: "16 Mar 2026",
+    totalAmount: 1800,
+    advancePaid: 0,
+    remainingAmount: 1800,
   },
   {
     id: "5",
-    dateAdded: "14 Mar 2026",
-    whatsapp: "WA-4",
+    inquiryDate: "14 Mar 2026",
+    whatsapp: "Fun & Fun",
+    assignedPerson: "Mariam",
+    confirmBookingDate: "30 Mar 2026",
     customerName: "Sara Lee",
-    phone: "+9715xxxx",
-    groupSize: 35,
-    location: "Yacht",
-    travelDate: "30 Mar 2026",
-    bookingStatus: "Confirmed",
-    visitReminderStatus: "Today",
+    contact: "+9715xxxx",
+    numberOfPersons: 35,
+    cruiseName: "Blue world",
+    slotTiming: "7:30 PM",
+    location: "Private yacht",
+    groupNo: "G005",
+    bookingStatus: "Done",
     lastFollowUpDate: "14 Mar 2026",
-    nextFollowUpDate: "—",
+    remarks: "Advance received",
+    callingDate: "14 Mar 2026",
+    totalAmount: 9500,
+    advancePaid: 9500,
+    remainingAmount: 0,
   },
   {
     id: "6",
-    dateAdded: "15 Mar 2026",
-    whatsapp: "WA-2",
+    inquiryDate: "15 Mar 2026",
+    whatsapp: "Dhow cruise trip",
+    assignedPerson: "Mariam",
+    confirmBookingDate: "27 Mar 2026",
     customerName: "John Smith",
-    phone: "+9715xxxx",
-    groupSize: 15,
+    contact: "+9715xxxx",
+    numberOfPersons: 15,
+    cruiseName: "Dubai Cruise Deals Wanderlust Wanderlust Adventures",
+    slotTiming: "7:00 PM",
     location: "Canal",
-    travelDate: "27 Mar 2026",
-    bookingStatus: "New Inquiry",
-    visitReminderStatus: "Due in 15 min",
+    groupNo: "G006",
+    bookingStatus: "Not done",
     lastFollowUpDate: "—",
-    nextFollowUpDate: "15 Mar 2026",
+    remarks: "Due in 15 min",
+    callingDate: "15 Mar 2026",
+    totalAmount: 2200,
+    advancePaid: 500,
+    remainingAmount: 1700,
   },
   {
     id: "7",
-    dateAdded: "15 Mar 2026",
-    whatsapp: "WA-1",
+    inquiryDate: "15 Mar 2026",
+    whatsapp: "Fun Factory",
+    assignedPerson: "Samia",
+    confirmBookingDate: "25 Mar 2026",
     customerName: "Ali Khan",
-    phone: "+9715xxxx",
-    groupSize: 20,
+    contact: "+9715xxxx",
+    numberOfPersons: 20,
+    cruiseName: "Dhow cruise trip",
+    slotTiming: "6:30 PM",
     location: "Marina",
-    travelDate: "25 Mar 2026",
-    bookingStatus: "Follow-Up Pending",
-    visitReminderStatus: "Today",
+    groupNo: "G007",
+    bookingStatus: "Not done",
     lastFollowUpDate: "15 Mar 2026",
-    nextFollowUpDate: "15 Mar 2026",
+    remarks: "Waiting final confirmation",
+    callingDate: "15 Mar 2026",
+    totalAmount: 3800,
+    advancePaid: 800,
+    remainingAmount: 3000,
   },
   {
     id: "8",
-    dateAdded: "14 Mar 2026",
-    whatsapp: "WA-3",
+    inquiryDate: "14 Mar 2026",
+    whatsapp: "Blue world",
+    assignedPerson: "Hina",
+    confirmBookingDate: "22 Mar 2026",
     customerName: "Ahmed Raza",
-    phone: "+9715xxxx",
-    groupSize: 28,
+    contact: "+9715xxxx",
+    numberOfPersons: 28,
+    cruiseName: "Wanderlust Adventures",
+    slotTiming: "7:00 PM",
     location: "Creek",
-    travelDate: "22 Mar 2026",
-    bookingStatus: "Waiting for Customer",
-    visitReminderStatus: "Visit Scheduled",
+    groupNo: "G008",
+    bookingStatus: "Not done",
     lastFollowUpDate: "13 Mar 2026",
-    nextFollowUpDate: "16 Mar 2026",
+    remarks: "Visit Scheduled",
+    callingDate: "16 Mar 2026",
+    totalAmount: 5600,
+    advancePaid: 1500,
+    remainingAmount: 4100,
   },
 ];
 
@@ -262,7 +322,7 @@ export const visitLeadRows: VisitLeadRow[] = [
     id: "1",
     guest: "Sara Lee",
     contact: "+9715xxxx",
-    location: "Yacht",
+    location: "Private yacht",
     visitStatus: "Visit Completed",
     reminderStatus: "Done",
     agent: "Mariam",
@@ -282,7 +342,7 @@ export const visitLeadRows: VisitLeadRow[] = [
     id: "3",
     guest: "Naveed Events",
     contact: "+9715xxxx",
-    location: "Yacht",
+    location: "Private yacht",
     visitStatus: "Visit Tomorrow",
     reminderStatus: "Visit Tomorrow",
     agent: "Mariam",
@@ -316,11 +376,9 @@ export const liveActivities: ActivityItem[] = [
   { id: "4", customerName: "Sara Lee", dateTime: "14 Mar 2026, 8:15 PM", action: "Confirmed booking", agent: "Mariam" },
 ];
 
-export const dashboardTabs = [
+/** Tabs: Control Tower, each WhatsApp from the form list, then Calendar View. */
+export const dashboardTabs: readonly { id: string; label: string }[] = [
   { id: "control-tower", label: "Control Tower" },
-  { id: "wa-1", label: "WA-1 Groups" },
-  { id: "wa-2", label: "WA-2 Groups" },
-  { id: "wa-3", label: "WA-3 Groups" },
-  { id: "wa-4", label: "WA-4 Groups" },
+  ...GROUP_DASHBOARD_WHATSAPP_OPTIONS.map((wa) => ({ id: wa, label: wa })),
   { id: "calendar", label: "Calendar View" },
-] as const;
+];

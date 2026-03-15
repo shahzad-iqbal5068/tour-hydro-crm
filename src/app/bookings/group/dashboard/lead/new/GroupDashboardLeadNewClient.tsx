@@ -4,36 +4,37 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "react-hot-toast";
 import GroupDashboardForm from "@/components/group-dashboard/GroupDashboardForm";
-import { useGroupDashboardLeads } from "@/hooks/api";
+import { useGroupDashboardLeads, useUsersList } from "@/hooks/api";
 import type { GroupDashboardFormValues } from "@/types/groupDashboard";
 
 export default function GroupDashboardLeadNewClient() {
   const router = useRouter();
   const { createMutation } = useGroupDashboardLeads();
+  const { data: users = [] } = useUsersList();
 
   const handleSubmit = async (values: GroupDashboardFormValues) => {
+    const assignedName =
+      values.assignedPerson &&
+      users.find((u) => u.id === values.assignedPerson)?.name;
     try {
       await createMutation.mutateAsync({
-        dateAdded: values.dateAdded || undefined,
+        inquiryDate: values.inquiryDate || undefined,
         whatsapp: values.whatsapp,
+        assignedAgent: assignedName || values.assignedPerson || undefined,
+        confirmBookingDate: values.confirmBookingDate || undefined,
         customerName: values.customerName,
-        phone: values.phone,
-        groupSize: values.groupSize,
+        contact: values.contact,
+        numberOfPersons: values.numberOfPersons,
+        cruiseName: values.cruiseName || undefined,
+        slotTiming: values.slotTiming || undefined,
         location: values.location,
-        travelDate: values.travelDate,
+        groupNo: values.groupNo || undefined,
         bookingStatus: values.bookingStatus,
         lastFollowUpDate: values.lastFollowUpDate || undefined,
-        nextFollowUpDate: values.nextFollowUpDate || undefined,
-        nextFollowUpTime: values.nextFollowUpTime || undefined,
-        followUpPriority: values.followUpPriority,
-        assignedAgent: values.assignedAgent || undefined,
-        updatedByEmail: values.updatedByEmail || undefined,
-        reminderDone: values.reminderDone,
-        reminderTriggered: values.reminderTriggered,
-        popupAlertStatus: values.popupAlertStatus,
-        reminderVisitStatus: values.reminderVisitStatus,
-        visitStatus: values.visitStatus,
-        notes: values.notes || undefined,
+        remarks: values.remarks || undefined,
+        callingDate: values.callingDate || undefined,
+        totalAmount: values.totalAmount,
+        advancePaid: values.advancePaid,
       });
       toast.success("Group lead saved. Redirecting to dashboard…");
       router.push("/bookings/group/dashboard");

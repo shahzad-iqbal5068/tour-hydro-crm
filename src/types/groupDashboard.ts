@@ -3,25 +3,20 @@
  * Used by dashboard form, API, and display components.
  */
 
-export const GROUP_DASHBOARD_STATUS_OPTIONS = [
-  "New Inquiry",
-  "Follow-Up Pending",
-  "Follow-Up Done",
-  "Waiting for Customer",
-  "Confirmed",
-  "Cancelled",
-  "No Reply",
-  "Lost",
+export const GROUP_DASHBOARD_BOOKING_STATUS_OPTIONS = [
+  "Done",
+  "Not done",
+  "Custom",
 ] as const;
 
 export type GroupDashboardStatus =
-  (typeof GROUP_DASHBOARD_STATUS_OPTIONS)[number];
+  (typeof GROUP_DASHBOARD_BOOKING_STATUS_OPTIONS)[number];
 
 export const GROUP_DASHBOARD_LOCATION_OPTIONS = [
   "Canal",
   "Marina",
   "Creek",
-  "Yacht",
+  "Private yacht",
 ] as const;
 
 export type GroupDashboardLocation =
@@ -56,9 +51,18 @@ export const GROUP_DASHBOARD_REMINDER_OPTIONS = [
 export type GroupDashboardReminderStatus =
   (typeof GROUP_DASHBOARD_REMINDER_OPTIONS)[number];
 
-export const GROUP_DASHBOARD_WHATSAPP_OPTIONS = ["WA-1", "WA-2", "WA-3", "WA-4"] as const;
+export const GROUP_DASHBOARD_WHATSAPP_OPTIONS = [
+  "Fun Factory",
+  "Fun & Fun",
+  "Dhow Cruise (Ocean Leopard)",
+  "Dubai Cruise Deals Wanderlust Wanderlust Adventures",
+  "Blue world",
+  "Dhow cruise trip",
+  "Dubai Deals",
+] as const;
 
-export type GroupDashboardWhatsApp = (typeof GROUP_DASHBOARD_WHATSAPP_OPTIONS)[number];
+export type GroupDashboardWhatsApp =
+  (typeof GROUP_DASHBOARD_WHATSAPP_OPTIONS)[number];
 
 export const GROUP_DASHBOARD_FOLLOW_UP_PRIORITY_OPTIONS = [
   "High",
@@ -77,46 +81,71 @@ export type GroupDashboardPopupAlert =
 /** Row shape from GET /api/group-dashboard-leads (list item) */
 export type GroupDashboardLeadRow = {
   _id: string;
+  inquiryDate?: string;
   dateAdded?: string;
   whatsapp: string;
+  assignedPerson?: string;
+  assignedAgent?: string;
+  confirmBookingDate?: string;
   customerName: string;
   phone: string;
+  contact?: string;
   groupSize: number;
+  numberOfPersons?: number;
+  cruiseName?: string;
+  slotTiming?: string;
   location: string;
-  travelDate: string;
+  groupNo?: string;
   bookingStatus: string;
+  lastFollowUpDate?: string;
+  remarks?: string;
+  notes?: string;
+  callingDate?: string;
+  totalAmount?: number;
+  advancePaid?: number;
+  remainingAmount?: number;
   visitReminderStatus?: string;
   reminderVisitStatus?: string;
   visitStatus?: string;
-  lastFollowUpDate?: string;
   nextFollowUpDate?: string;
   nextFollowUpTime?: string;
   followUpPriority?: string;
-  assignedAgent?: string;
   updatedByEmail?: string;
   updateTimestamp?: string;
   reminderDone?: boolean;
   reminderTriggered?: boolean;
   popupAlertStatus?: string;
-  notes?: string;
 };
 
 /** API/DB document shape (with _id and timestamps) */
 export type GroupDashboardLead = {
   _id: string;
+  inquiryDate?: string;
   dateAdded?: string;
   whatsapp: GroupDashboardWhatsApp;
+  assignedPerson?: string;
+  assignedAgent?: string;
+  confirmBookingDate?: string;
   customerName: string;
   phone: string;
+  contact?: string;
   groupSize: number;
+  numberOfPersons?: number;
+  cruiseName?: string;
+  slotTiming?: string;
   location: GroupDashboardLocation;
-  travelDate: string;
+  groupNo?: string;
   bookingStatus: GroupDashboardStatus;
   lastFollowUpDate?: string;
+  remarks?: string;
+  notes?: string;
+  callingDate?: string;
+  totalAmount?: number;
+  advancePaid?: number;
+  remainingAmount?: number;
   nextFollowUpDate?: string;
   nextFollowUpTime?: string;
   followUpPriority?: GroupDashboardFollowUpPriority;
-  assignedAgent?: string;
   updatedByEmail?: string;
   updateTimestamp?: string;
   reminderDone?: boolean;
@@ -124,32 +153,29 @@ export type GroupDashboardLead = {
   popupAlertStatus?: GroupDashboardPopupAlert;
   reminderVisitStatus?: GroupDashboardReminderStatus;
   visitStatus?: GroupDashboardVisitStatus;
-  notes?: string;
   createdAt?: string;
   updatedAt?: string;
 };
 
 /** Form values for create/edit */
 export type GroupDashboardFormValues = {
-  dateAdded: string;
+  inquiryDate: string;
   whatsapp: GroupDashboardWhatsApp;
+  assignedPerson: string;
+  confirmBookingDate: string;
   customerName: string;
-  phone: string;
-  groupSize: number;
+  contact: string;
+  numberOfPersons: number;
+  cruiseName: string;
+  slotTiming: string;
   location: GroupDashboardLocation;
-  travelDate: string;
+  groupNo: string;
   bookingStatus: GroupDashboardStatus;
   lastFollowUpDate: string;
-  nextFollowUpDate: string;
-  nextFollowUpTime: string;
-  followUpPriority: GroupDashboardFollowUpPriority;
-  assignedAgent: string;
-  updatedByEmail: string;
+  remarks: string;
+  callingDate: string;
+  totalAmount: number;
+  advancePaid: number;
+  remainingAmount: number;
   updateTimestamp: string;
-  reminderDone: boolean;
-  reminderTriggered: boolean;
-  popupAlertStatus: GroupDashboardPopupAlert;
-  reminderVisitStatus: GroupDashboardReminderStatus;
-  visitStatus: GroupDashboardVisitStatus;
-  notes: string;
 };

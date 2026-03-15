@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { BookingVariantOption } from "@/types/booking";
+import { Button } from "@/components/ui/Button";
 
 export type BookingFormValues = {
   date: string;
@@ -136,7 +137,7 @@ export default function BookingForm({
   };
 
   return (
-    <div className="w-full shrink-0 rounded-lg border border-zinc-200 bg-white p-4 text-xs shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-5 lg:max-w-sm">
+    <div className="w-full shrink-0 rounded-xl border border-zinc-200 bg-white p-4 text-xs shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-5 lg:max-w-sm">
       <h2 className="mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
         {isEditing ? "Edit booking" : "New booking"}
       </h2>
@@ -341,21 +342,20 @@ export default function BookingForm({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="sm"
+            loading={isSubmitting}
             disabled={isSubmitting}
-            className="inline-flex flex-1 items-center justify-center rounded-md bg-zinc-900 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="flex-1"
           >
             {isSubmitting ? (isEditing ? "Saving..." : "Submitting...") : isEditing ? "Save changes" : "Submit"}
-          </button>
+          </Button>
           {isEditing && onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="inline-flex items-center justify-center rounded-md border border-zinc-300 px-3 py-1.5 text-[11px] font-medium text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-900"
-            >
+            <Button type="button" variant="secondary" size="sm" onClick={onCancel}>
               Cancel
-            </button>
+            </Button>
           )}
         </div>
       </form>

@@ -18,6 +18,7 @@ import GroupDashboardKPICards from "./GroupDashboardKPICards";
 import GroupDashboardAlerts from "./GroupDashboardAlerts";
 import GroupDashboardTabs from "./GroupDashboardTabs";
 import MasterGroupBookingTable from "./MasterGroupBookingTable";
+import GroupDashboardCalendarCards from "./GroupDashboardCalendarCards";
 import TodayFollowUpsTable from "./TodayFollowUpsTable";
 import VisitLeadsTable from "./VisitLeadsTable";
 import DueIn15MinutesCard from "./DueIn15MinutesCard";
@@ -31,22 +32,35 @@ export default function GroupBookingDashboardClient() {
   const masterRowsFromApi: MasterGroupRow[] = useMemo(() => {
     return apiLeads.map((row) => ({
       id: row._id,
-      dateAdded: row.dateAdded ?? "—",
+      inquiryDate: row.inquiryDate ?? row.dateAdded ?? "—",
       whatsapp: row.whatsapp,
+      assignedPerson: row.assignedPerson ?? row.assignedAgent ?? "—",
+      confirmBookingDate: row.confirmBookingDate ?? "—",
       customerName: row.customerName,
-      phone: row.phone,
-      groupSize: row.groupSize,
+      contact: row.contact ?? row.phone ?? "—",
+      numberOfPersons: row.numberOfPersons ?? row.groupSize ?? 0,
+      cruiseName: row.cruiseName ?? "—",
+      slotTiming: row.slotTiming ?? "—",
       location: row.location,
-      travelDate: row.travelDate ?? "—",
+      groupNo: row.groupNo ?? "—",
       bookingStatus: row.bookingStatus,
-      visitReminderStatus: row.visitReminderStatus ?? row.reminderVisitStatus,
       lastFollowUpDate: row.lastFollowUpDate ?? "—",
-      nextFollowUpDate: row.nextFollowUpDate ?? "—",
+      remarks: row.remarks ?? row.notes ?? "—",
+      callingDate: row.callingDate ?? "—",
+      totalAmount: row.totalAmount ?? "—",
+      advancePaid: row.advancePaid ?? "—",
+      remainingAmount: row.remainingAmount ?? "—",
     }));
   }, [apiLeads]);
 
-  const masterRows =
+  const allMasterRows =
     apiLeads.length > 0 ? masterRowsFromApi : masterGroupRows;
+
+  /** When a WhatsApp tab is selected, show only that WhatsApp; otherwise show all. Calendar uses all rows. */
+  const masterRows =
+    activeTab === "control-tower" || activeTab === "calendar"
+      ? allMasterRows
+      : allMasterRows.filter((r) => r.whatsapp === activeTab);
 
   const handleDismissAlert = (id: string) => {
     setAlerts((prev) => prev.filter((a) => a.id !== id));
@@ -92,16 +106,19 @@ export default function GroupBookingDashboardClient() {
           />
         </div>
 
-        {/* Main content: table + Add lead link in master section */}
+        {/* Main content: table or calendar cards + Add lead link */}
         <div className="flex flex-col gap-6">
           <div className="min-w-0 flex-1 space-y-6">
-            {activeTab === "control-tower" && (
-              <div className="space-y-3">
+            <div className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {apiLeads.length > 0
-                      ? `${apiLeads.length} lead(s) from database`
-                      : "Sample data below. Add a lead to save to the database."}
+                      {activeTab === "calendar"
+                        ? `${allMasterRows.length} follow-up entr${allMasterRows.length === 1 ? "y" : "ies"}`
+                        : apiLeads.length > 0
+                          ? activeTab === "control-tower"
+                            ? `${apiLeads.length} lead(s) from database`
+                            : `${masterRows.length} lead(s) for ${activeTab}`
+                          : "Sample data below. Add a lead to save to the database."}
                   </span>
                   <Link
                     href="/bookings/group/dashboard/lead/new"
@@ -110,9 +127,12 @@ export default function GroupBookingDashboardClient() {
                     + Add group lead
                   </Link>
                 </div>
-                <MasterGroupBookingTable rows={masterRows} />
+                {activeTab === "calendar" ? (
+                  <GroupDashboardCalendarCards rows={allMasterRows} />
+                ) : (
+                  <MasterGroupBookingTable rows={masterRows} />
+                )}
               </div>
-            )}
             <div className="flex flex-col gap-6 lg:flex-row lg:justify-between lg:items-start">
               <div className="min-w-0 flex-1 lg:min-w-0">
                 <TodayFollowUpsTable rows={todayFollowUpRows} />
