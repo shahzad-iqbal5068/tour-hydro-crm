@@ -7,6 +7,7 @@ import { Toaster, toast } from "react-hot-toast";
 import type { LoginValues } from "@/types";
 import { authLogin } from "@/lib/api";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 export function LoginForm() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
+    <div className="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
       <Toaster position="top-right" />
       <h1 className="mb-4 text-xl text-center font-semibold text-zinc-900 dark:text-zinc-50">
         Welcome to the Hydro CRM
@@ -82,10 +83,12 @@ export function LoginForm() {
             <span className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-zinc-400">
               <Lock className="h-4 w-4" />
             </span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute inset-y-0 right-0 flex items-center pr-2 !p-0 min-w-0 h-auto text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-0 flex items-center pr-2 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
@@ -93,7 +96,7 @@ export function LoginForm() {
               ) : (
                 <Eye className="h-4 w-4" />
               )}
-            </button>
+            </Button>
           </div>
           {errors.password && (
             <p className="mt-1 text-xs text-red-500">
@@ -101,13 +104,16 @@ export function LoginForm() {
             </p>
           )}
         </div>
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size="lg"
+          fullWidth
+          loading={isSubmitting}
           disabled={isSubmitting}
-          className="inline-flex w-full items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
           {isSubmitting ? "Sign in..." : "Sign in"}
-        </button>
+        </Button>
       </form>
     </div>
   );

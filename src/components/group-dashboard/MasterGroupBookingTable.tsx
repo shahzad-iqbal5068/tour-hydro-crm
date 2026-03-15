@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import type { MasterGroupRow } from "@/data/groupBookingDashboardData";
+import { STATUS_FILTER_OPTIONS } from "@/data/groupBookingDashboardData";
 import {
-  STATUS_FILTER_OPTIONS,
-  VISIT_REMINDER_OPTIONS,
-} from "@/data/groupBookingDashboardData";
+  GROUP_DASHBOARD_LOCATION_OPTIONS,
+  GROUP_DASHBOARD_WHATSAPP_OPTIONS,
+} from "@/types/groupDashboard";
+import { Badge } from "@/components/ui/Badge";
 
 type MasterGroupBookingTableProps = {
   rows: MasterGroupRow[];
@@ -16,38 +18,77 @@ const filterSelectClass =
 const filterInputClass =
   "rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-500";
 
+function cellValue(value: number | string): string {
+  if (value === undefined || value === null) return "—";
+  if (typeof value === "number" && Number.isNaN(value)) return "—";
+  return String(value);
+}
+
+/** Search across all visible table fields (every form field). */
+function rowMatchesSearch(r: MasterGroupRow, q: string): boolean {
+  if (!q) return true;
+  const lower = q.toLowerCase();
+  const str = (v: unknown) => (v != null ? String(v).toLowerCase() : "");
+  return (
+    str(r.inquiryDate).includes(lower) ||
+    str(r.whatsapp).includes(lower) ||
+    str(r.assignedPerson).includes(lower) ||
+    str(r.confirmBookingDate).includes(lower) ||
+    str(r.customerName).includes(lower) ||
+    str(r.contact).includes(lower) ||
+    str(r.numberOfPersons).includes(lower) ||
+    str(r.cruiseName).includes(lower) ||
+    str(r.slotTiming).includes(lower) ||
+    str(r.location).includes(lower) ||
+    str(r.groupNo).includes(lower) ||
+    str(r.bookingStatus).includes(lower) ||
+    str(r.lastFollowUpDate).includes(lower) ||
+    str(r.remarks).includes(lower) ||
+    str(r.callingDate).includes(lower) ||
+    str(r.totalAmount).includes(lower) ||
+    str(r.advancePaid).includes(lower) ||
+    str(r.remainingAmount).includes(lower)
+  );
+}
+
 export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTableProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [locationFilter, setLocationFilter] = useState("all");
   const [waFilter, setWaFilter] = useState("all");
-  const [visitReminderFilter, setVisitReminderFilter] = useState("All Visit / Reminder");
 
   const filtered = rows.filter((r) => {
-    const q = search.toLowerCase();
-    const matchSearch =
-      !q ||
-      r.customerName.toLowerCase().includes(q) ||
-      r.phone.includes(q) ||
-      r.location.toLowerCase().includes(q) ||
-      r.whatsapp.toLowerCase().includes(q) ||
-      r.bookingStatus.toLowerCase().includes(q);
+    const matchSearch = rowMatchesSearch(r, search.trim());
     const matchStatus =
       statusFilter === "All Statuses" || r.bookingStatus === statusFilter;
     const matchLocation = locationFilter === "all" || r.location === locationFilter;
     const matchWa = waFilter === "all" || r.whatsapp === waFilter;
-    const matchVisitReminder =
-      visitReminderFilter === "All Visit / Reminder" ||
-      (r.visitReminderStatus && r.visitReminderStatus === visitReminderFilter);
-    return matchSearch && matchStatus && matchLocation && matchWa && matchVisitReminder;
+    return matchSearch && matchStatus && matchLocation && matchWa;
   });
 
-  const locations = [...new Set(rows.map((r) => r.location))].sort();
-  const was = [...new Set(rows.map((r) => r.whatsapp))].sort();
+  const columns: { key: keyof MasterGroupRow; label: string }[] = [
+    { key: "inquiryDate", label: "Inquiry Date" },
+    { key: "whatsapp", label: "WhatsApp" },
+    { key: "assignedPerson", label: "Assigned Person" },
+    { key: "confirmBookingDate", label: "Confirm booking date" },
+    { key: "customerName", label: "Customer Name" },
+    { key: "contact", label: "Contact" },
+    { key: "numberOfPersons", label: "No. of persons" },
+    { key: "cruiseName", label: "Cruise Name" },
+    { key: "slotTiming", label: "Slot timing" },
+    { key: "location", label: "Location" },
+    { key: "groupNo", label: "Group No." },
+    { key: "bookingStatus", label: "Booking Status" },
+    { key: "lastFollowUpDate", label: "Last Follow Up Date" },
+    { key: "remarks", label: "Remarks" },
+    { key: "callingDate", label: "Calling date" },
+    { key: "totalAmount", label: "Total amount" },
+    { key: "advancePaid", label: "Advance Paid" },
+    { key: "remainingAmount", label: "Remaining Amount" },
+  ];
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-      {/* Title + full-width filter bar with consistent border and padding */}
+    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
           Master Group Booking Dashboard
@@ -57,7 +98,7 @@ export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTabl
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by guest, phone, location, WhatsApp, notes"
+            placeholder="Search all fields…"
             className={`${filterInputClass} min-w-[200px] flex-1 max-w-md`}
           />
           <select
@@ -77,7 +118,7 @@ export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTabl
             className={filterSelectClass}
           >
             <option value="all">All Locations</option>
-            {locations.map((l) => (
+            {GROUP_DASHBOARD_LOCATION_OPTIONS.map((l) => (
               <option key={l} value={l}>
                 {l}
               </option>
@@ -88,21 +129,10 @@ export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTabl
             onChange={(e) => setWaFilter(e.target.value)}
             className={filterSelectClass}
           >
-            <option value="all">All WA</option>
-            {was.map((w) => (
+            <option value="all">All WhatsApp</option>
+            {GROUP_DASHBOARD_WHATSAPP_OPTIONS.map((w) => (
               <option key={w} value={w}>
                 {w}
-              </option>
-            ))}
-          </select>
-          <select
-            value={visitReminderFilter}
-            onChange={(e) => setVisitReminderFilter(e.target.value)}
-            className={filterSelectClass}
-          >
-            {VISIT_REMINDER_OPTIONS.map((v) => (
-              <option key={v} value={v}>
-                {v}
               </option>
             ))}
           </select>
@@ -112,16 +142,11 @@ export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTabl
         <table className="min-w-full text-left text-[11px]">
           <thead>
             <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-              <th className="px-4 py-3">Date Added</th>
-              <th className="px-4 py-3">WhatsApp</th>
-              <th className="px-4 py-3">Customer Name</th>
-              <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3">Group Size</th>
-              <th className="px-4 py-3">Location</th>
-              <th className="px-4 py-3">Travel Date</th>
-              <th className="px-4 py-3">Booking Status</th>
-              <th className="px-4 py-3">Last Follow Up</th>
-              <th className="px-4 py-3">Next Follow Up</th>
+              {columns.map((col) => (
+                <th key={col.key} className="whitespace-nowrap px-4 py-3">
+                  {col.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -131,31 +156,42 @@ export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTabl
                 className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
               >
                 <td className="whitespace-nowrap px-4 py-3 text-zinc-700 dark:text-zinc-200">
-                  {r.dateAdded}
+                  {cellValue(r.inquiryDate)}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">{r.whatsapp}</td>
+                <td className="whitespace-nowrap px-4 py-3">{cellValue(r.assignedPerson)}</td>
+                <td className="whitespace-nowrap px-4 py-3">{cellValue(r.confirmBookingDate)}</td>
                 <td className="whitespace-nowrap px-4 py-3 font-medium">{r.customerName}</td>
-                <td className="whitespace-nowrap px-4 py-3">{r.phone}</td>
-                <td className="whitespace-nowrap px-4 py-3">{r.groupSize}</td>
+                <td className="whitespace-nowrap px-4 py-3">{cellValue(r.contact)}</td>
+                <td className="whitespace-nowrap px-4 py-3">{cellValue(r.numberOfPersons)}</td>
+                <td className="max-w-[140px] truncate px-4 py-3" title={r.cruiseName}>
+                  {cellValue(r.cruiseName)}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3">{cellValue(r.slotTiming)}</td>
                 <td className="whitespace-nowrap px-4 py-3">{r.location}</td>
-                <td className="whitespace-nowrap px-4 py-3">{r.travelDate}</td>
+                <td className="whitespace-nowrap px-4 py-3">{cellValue(r.groupNo)}</td>
                 <td className="whitespace-nowrap px-4 py-3">
-                  <span
-                    className={`inline-block rounded-lg border px-2 py-0.5 text-[10px] font-medium ${
-                      r.bookingStatus === "Confirmed"
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200"
-                        : r.bookingStatus === "No Reply" || r.bookingStatus === "Lost" || r.bookingStatus === "Cancelled"
-                          ? "border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-                          : r.bookingStatus === "New Inquiry"
-                            ? "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-200"
-                            : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-200"
-                    }`}
+                  <Badge
+                    variant="soft"
+                    color={
+                      r.bookingStatus === "Done"
+                        ? "success"
+                        : r.bookingStatus === "Not done"
+                          ? "warning"
+                          : "neutral"
+                    }
                   >
                     {r.bookingStatus}
-                  </span>
+                  </Badge>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3">{r.lastFollowUpDate}</td>
-                <td className="whitespace-nowrap px-4 py-3">{r.nextFollowUpDate}</td>
+                <td className="whitespace-nowrap px-4 py-3">{cellValue(r.lastFollowUpDate)}</td>
+                <td className="max-w-[160px] truncate px-4 py-3" title={r.remarks}>
+                  {cellValue(r.remarks)}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3">{cellValue(r.callingDate)}</td>
+                <td className="whitespace-nowrap px-4 py-3">{cellValue(r.totalAmount)}</td>
+                <td className="whitespace-nowrap px-4 py-3">{cellValue(r.advancePaid)}</td>
+                <td className="whitespace-nowrap px-4 py-3 font-medium">{cellValue(r.remainingAmount)}</td>
               </tr>
             ))}
           </tbody>

@@ -5,37 +5,37 @@ import { useForm } from "react-hook-form";
 import type { GroupDashboardFormValues } from "@/types/groupDashboard";
 import {
   GROUP_DASHBOARD_WHATSAPP_OPTIONS,
-  GROUP_DASHBOARD_STATUS_OPTIONS,
+  GROUP_DASHBOARD_BOOKING_STATUS_OPTIONS,
   GROUP_DASHBOARD_LOCATION_OPTIONS,
-  GROUP_DASHBOARD_VISIT_STATUS_OPTIONS,
-  GROUP_DASHBOARD_REMINDER_OPTIONS,
-  GROUP_DASHBOARD_FOLLOW_UP_PRIORITY_OPTIONS,
-  GROUP_DASHBOARD_POPUP_ALERT_OPTIONS,
 } from "@/types/groupDashboard";
+import { useUsersList } from "@/hooks/api/useUsersList";
+import { Button } from "@/components/ui/Button";
+
+function getTodayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export function getDefaultGroupDashboardFormValues(): GroupDashboardFormValues {
   return {
-    dateAdded: new Date().toISOString().slice(0, 10),
-    whatsapp: "WA-1",
+    inquiryDate: getTodayISO(),
+    whatsapp: "Fun Factory",
+    assignedPerson: "",
+    confirmBookingDate: "",
     customerName: "",
-    phone: "",
-    groupSize: 0,
+    contact: "",
+    numberOfPersons: 0,
+    cruiseName: "",
+    slotTiming: "",
     location: "Canal",
-    travelDate: "",
-    bookingStatus: "New Inquiry",
+    groupNo: "",
+    bookingStatus: "Not done",
     lastFollowUpDate: "",
-    nextFollowUpDate: "",
-    nextFollowUpTime: "",
-    followUpPriority: "Medium",
-    assignedAgent: "",
-    updatedByEmail: "",
+    remarks: "",
+    callingDate: "",
+    totalAmount: 0,
+    advancePaid: 0,
+    remainingAmount: 0,
     updateTimestamp: "",
-    reminderDone: false,
-    reminderTriggered: false,
-    popupAlertStatus: "Pending",
-    reminderVisitStatus: "No Visit",
-    visitStatus: "No Visit",
-    notes: "",
   };
 }
 
@@ -58,14 +58,26 @@ export default function GroupDashboardForm({
   onCancel,
   isEditing = false,
 }: GroupDashboardFormProps) {
+  const { data: users = [] } = useUsersList();
   const {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { isSubmitting },
   } = useForm<GroupDashboardFormValues>({
     defaultValues: initialValues ?? getDefaultGroupDashboardFormValues(),
   });
+
+  const totalAmount = watch("totalAmount");
+  const advancePaid = watch("advancePaid");
+
+  useEffect(() => {
+    const total = Number(totalAmount) || 0;
+    const advance = Number(advancePaid) || 0;
+    setValue("remainingAmount", Math.max(0, total - advance));
+  }, [totalAmount, advancePaid, setValue]);
 
   useEffect(() => {
     reset(initialValues ?? getDefaultGroupDashboardFormValues());
@@ -76,8 +88,10 @@ export default function GroupDashboardForm({
     reset(getDefaultGroupDashboardFormValues());
   };
 
+  const today = getTodayISO();
+
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <h2 className="mb-4 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
         {isEditing ? "Edit Group Lead" : "Add Group Lead"}
       </h2>
@@ -90,11 +104,12 @@ export default function GroupDashboardForm({
         onSubmit={handleSubmit(handleFormSubmit)}
       >
         <div>
-          <label className={labelClass}>Date Added</label>
+          <label className={labelClass}>Inquiry Date</label>
           <input
             type="date"
             className={inputClass}
-            {...register("dateAdded", { required: true })}
+            min={today}
+            {...register("inquiryDate", { required: true })}
           />
         </div>
 
@@ -113,6 +128,27 @@ export default function GroupDashboardForm({
         </div>
 
         <div>
+          <label className={labelClass}>Assigned Person</label>
+          <select className={inputClass} {...register("assignedPerson")}>
+            <option value="">Select user</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className={labelClass}>Confirm booking date</label>
+          <input
+            type="date"
+            className={inputClass}
+            {...register("confirmBookingDate")}
+          />
+        </div>
+
+        <div>
           <label className={labelClass}>Customer Name</label>
           <input
             type="text"
@@ -123,22 +159,42 @@ export default function GroupDashboardForm({
         </div>
 
         <div>
-          <label className={labelClass}>Phone</label>
+          <label className={labelClass}>Contact</label>
           <input
             type="text"
             className={inputClass}
-            {...register("phone", { required: true })}
+            {...register("contact", { required: true })}
             placeholder="+9715xxxx"
           />
         </div>
 
         <div>
-          <label className={labelClass}>Group Size</label>
+          <label className={labelClass}>No. of persons</label>
           <input
             type="number"
             min={0}
             className={inputClass}
-            {...register("groupSize", { valueAsNumber: true })}
+            {...register("numberOfPersons", { valueAsNumber: true })}
+          />
+        </div>
+
+        <div>
+          <label className={labelClass}>Cruise Name</label>
+          <input
+            type="text"
+            className={inputClass}
+            {...register("cruiseName")}
+            placeholder="Cruise name"
+          />
+        </div>
+
+        <div>
+          <label className={labelClass}>Slot timing</label>
+          <input
+            type="text"
+            className={inputClass}
+            {...register("slotTiming")}
+            placeholder="e.g. 6:30 PM"
           />
         </div>
 
@@ -157,11 +213,12 @@ export default function GroupDashboardForm({
         </div>
 
         <div>
-          <label className={labelClass}>Travel Date</label>
+          <label className={labelClass}>Group No.</label>
           <input
-            type="date"
+            type="text"
             className={inputClass}
-            {...register("travelDate", { required: true })}
+            {...register("groupNo")}
+            placeholder="Group number"
           />
         </div>
 
@@ -171,7 +228,7 @@ export default function GroupDashboardForm({
             className={inputClass}
             {...register("bookingStatus", { required: true })}
           >
-            {GROUP_DASHBOARD_STATUS_OPTIONS.map((s) => (
+            {GROUP_DASHBOARD_BOOKING_STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>
@@ -189,53 +246,57 @@ export default function GroupDashboardForm({
         </div>
 
         <div>
-          <label className={labelClass}>Next Follow Up Date</label>
+          <label className={labelClass}>Remarks</label>
+          <textarea
+            rows={3}
+            className={inputClass}
+            {...register("remarks")}
+            placeholder="Notes, remarks, etc."
+          />
+        </div>
+
+        <div>
+          <label className={labelClass}>Calling date</label>
           <input
             type="date"
             className={inputClass}
-            {...register("nextFollowUpDate")}
+            {...register("callingDate")}
           />
         </div>
 
         <div>
-          <label className={labelClass}>Next Follow Up Time</label>
+          <label className={labelClass}>Total amount</label>
           <input
-            type="text"
+            type="number"
+            min={0}
+            step="0.01"
             className={inputClass}
-            {...register("nextFollowUpTime")}
-            placeholder="e.g. 6:30 PM"
+            {...register("totalAmount", { valueAsNumber: true })}
           />
         </div>
 
         <div>
-          <label className={labelClass}>Follow Up Priority</label>
-          <select className={inputClass} {...register("followUpPriority")}>
-            {GROUP_DASHBOARD_FOLLOW_UP_PRIORITY_OPTIONS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className={labelClass}>Assigned Agent</label>
+          <label className={labelClass}>Advance Paid</label>
           <input
-            type="text"
+            type="number"
+            min={0}
+            step="0.01"
             className={inputClass}
-            {...register("assignedAgent")}
-            placeholder="Agent name"
+            {...register("advancePaid", { valueAsNumber: true })}
           />
         </div>
 
         <div>
-          <label className={labelClass}>Updated By Email</label>
+          <label className={labelClass}>Remaining Amount</label>
           <input
-            type="email"
-            className={inputClass}
-            {...register("updatedByEmail")}
-            placeholder="agent@company.com"
+            type="number"
+            readOnly
+            className={`${inputClass} bg-zinc-100 dark:bg-zinc-800`}
+            {...register("remainingAmount", { valueAsNumber: true })}
           />
+          <p className="mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+            Auto: Total amount − Advance paid
+          </p>
         </div>
 
         {isEditing && (
@@ -250,84 +311,20 @@ export default function GroupDashboardForm({
           </div>
         )}
 
-        <div className="flex flex-wrap gap-6">
-          <label className="flex cursor-pointer items-center gap-2">
-            <input
-              type="checkbox"
-              className="h-4 w-4 rounded border-zinc-300"
-              {...register("reminderDone")}
-            />
-            <span className={labelClass}>Reminder Done</span>
-          </label>
-          <label className="flex cursor-pointer items-center gap-2">
-            <input
-              type="checkbox"
-              className="h-4 w-4 rounded border-zinc-300"
-              {...register("reminderTriggered")}
-            />
-            <span className={labelClass}>Reminder Triggered</span>
-          </label>
-        </div>
-
-        <div>
-          <label className={labelClass}>Popup Alert Status</label>
-          <select className={inputClass} {...register("popupAlertStatus")}>
-            {GROUP_DASHBOARD_POPUP_ALERT_OPTIONS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className={labelClass}>Reminder / Visit Status</label>
-          <select className={inputClass} {...register("reminderVisitStatus")}>
-            {GROUP_DASHBOARD_REMINDER_OPTIONS.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className={labelClass}>Visit Status</label>
-          <select className={inputClass} {...register("visitStatus")}>
-            {GROUP_DASHBOARD_VISIT_STATUS_OPTIONS.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className={labelClass}>Notes</label>
-          <textarea
-            rows={3}
-            className={inputClass}
-            {...register("notes")}
-            placeholder="Notes, remarks, etc."
-          />
-        </div>
-
         <div className="flex flex-wrap gap-2 pt-2">
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="md"
+            loading={isSubmitting}
             disabled={isSubmitting}
-            className="rounded-lg border border-zinc-200 bg-zinc-900 px-4 py-2 text-xs font-medium text-white shadow-sm hover:bg-zinc-800 disabled:opacity-70 dark:border-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             {isSubmitting ? "Saving…" : "Save to database"}
-          </button>
+          </Button>
           {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800"
-            >
+            <Button type="button" variant="secondary" size="md" onClick={onCancel}>
               Cancel
-            </button>
+            </Button>
           )}
         </div>
       </form>

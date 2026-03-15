@@ -3,81 +3,63 @@ import type {
   GroupDashboardWhatsApp,
   GroupDashboardLocation,
   GroupDashboardStatus,
-  GroupDashboardVisitStatus,
-  GroupDashboardReminderStatus,
-  GroupDashboardFollowUpPriority,
-  GroupDashboardPopupAlert,
 } from "@/types/groupDashboard";
 
 export interface IGroupDashboardLead extends Document {
+  inquiryDate?: Date;
   dateAdded?: Date;
   whatsapp: GroupDashboardWhatsApp;
+  assignedAgent?: string;
+  confirmBookingDate?: Date;
   customerName: string;
   phone: string;
   groupSize: number;
   location: GroupDashboardLocation;
-  travelDate: Date;
+  travelDate?: Date;
   bookingStatus: GroupDashboardStatus;
   lastFollowUpDate?: Date;
-  nextFollowUpDate?: Date;
-  nextFollowUpTime?: string;
-  followUpPriority?: GroupDashboardFollowUpPriority;
-  assignedAgent?: string;
-  updatedByEmail?: string;
-  reminderDone?: boolean;
-  reminderTriggered?: boolean;
-  popupAlertStatus?: GroupDashboardPopupAlert;
-  reminderVisitStatus?: GroupDashboardReminderStatus;
-  visitStatus?: GroupDashboardVisitStatus;
+  cruiseName?: string;
+  slotTiming?: string;
+  groupNo?: string;
+  remarks?: string;
   notes?: string;
+  callingDate?: Date;
+  totalAmount?: number;
+  advancePaid?: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const GROUP_DASHBOARD_STATUS_ENUM = [
-  "New Inquiry",
-  "Follow-Up Pending",
-  "Follow-Up Done",
-  "Waiting for Customer",
-  "Confirmed",
-  "Cancelled",
-  "No Reply",
-  "Lost",
+const GROUP_DASHBOARD_STATUS_ENUM = ["Done", "Not done", "Custom"];
+
+const GROUP_DASHBOARD_LOCATION_ENUM = [
+  "Canal",
+  "Marina",
+  "Creek",
+  "Private yacht",
 ];
 
-const GROUP_DASHBOARD_LOCATION_ENUM = ["Canal", "Marina", "Creek", "Yacht"];
-
-const GROUP_DASHBOARD_VISIT_ENUM = [
-  "Visit Completed",
-  "Customer Visit Scheduled",
-  "Visit Today",
-  "Visit Tomorrow",
-  "On The Way",
-  "No Visit",
-];
-
-const GROUP_DASHBOARD_REMINDER_ENUM = [
-  "Done",
-  "Today",
-  "Overdue",
-  "Due in 15 min",
-  "Upcoming",
-  "Visit Today",
-  "Visit Tomorrow",
-  "Visit Scheduled",
-  "Customer Coming",
-  "No Visit",
-  "On The Way",
+const GROUP_DASHBOARD_WHATSAPP_ENUM = [
+  "Fun Factory",
+  "Fun & Fun",
+  "Dhow Cruise (Ocean Leopard)",
+  "Dubai Cruise Deals Wanderlust Wanderlust Adventures",
+  "Blue world",
+  "Dhow cruise trip",
+  "Dubai Deals",
 ];
 
 const GroupDashboardLeadSchema = new Schema<IGroupDashboardLead>(
   {
+    inquiryDate: { type: Date },
     dateAdded: { type: Date },
     whatsapp: {
       type: String,
       required: true,
-      enum: ["WA-1", "WA-2", "WA-3", "WA-4"],
+      enum: GROUP_DASHBOARD_WHATSAPP_ENUM,
     },
+    assignedAgent: { type: String },
+    confirmBookingDate: { type: Date },
     customerName: { type: String, required: true },
     phone: { type: String, required: true },
     groupSize: { type: Number, required: true, default: 0 },
@@ -86,24 +68,21 @@ const GroupDashboardLeadSchema = new Schema<IGroupDashboardLead>(
       required: true,
       enum: GROUP_DASHBOARD_LOCATION_ENUM,
     },
-    travelDate: { type: Date, required: true },
+    travelDate: { type: Date },
     bookingStatus: {
       type: String,
       required: true,
       enum: GROUP_DASHBOARD_STATUS_ENUM,
     },
     lastFollowUpDate: { type: Date },
-    nextFollowUpDate: { type: Date },
-    nextFollowUpTime: { type: String },
-    followUpPriority: { type: String, enum: ["High", "Medium", "Low"] },
-    assignedAgent: { type: String },
-    updatedByEmail: { type: String },
-    reminderDone: { type: Boolean, default: false },
-    reminderTriggered: { type: Boolean, default: false },
-    popupAlertStatus: { type: String, enum: ["Pending", "Done"] },
-    reminderVisitStatus: { type: String, enum: GROUP_DASHBOARD_REMINDER_ENUM },
-    visitStatus: { type: String, enum: GROUP_DASHBOARD_VISIT_ENUM },
+    cruiseName: { type: String },
+    slotTiming: { type: String },
+    groupNo: { type: String },
+    remarks: { type: String },
     notes: { type: String },
+    callingDate: { type: Date },
+    totalAmount: { type: Number },
+    advancePaid: { type: Number },
   },
   { timestamps: true }
 );
