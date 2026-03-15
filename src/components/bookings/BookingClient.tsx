@@ -164,6 +164,7 @@ export default function BookingClient({
         onSubmit={handleFormSubmit}
         onCancel={handleNew}
       />
+      
       {deleteId && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-4 text-xs shadow-lg dark:border-zinc-800 dark:bg-zinc-950 sm:p-5">
