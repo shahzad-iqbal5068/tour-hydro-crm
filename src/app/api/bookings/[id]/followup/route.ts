@@ -7,7 +7,7 @@ type Context = {
 };
 
 /**
- * PUT /api/star-bookings/:id/followup
+ * PUT /api/bookings/:id/followup
  * Mark follow-up as done (followUpSent: true). Optional body: { followUpNote }.
  */
 export async function PUT(request: NextRequest, context: Context) {

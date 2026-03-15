@@ -22,7 +22,7 @@ export async function GET(_request: NextRequest, context: Context) {
 
     return NextResponse.json(booking, { status: 200 });
   } catch (error) {
-    console.error("Error fetching star booking:", error);
+    console.error("Error fetching booking:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
@@ -70,8 +70,9 @@ export async function PUT(request: NextRequest, context: Context) {
       remarks,
       callingRemarks,
     };
-    if (category && ["4-5", "3"].includes(category)) {
-      update.category = category;
+    const allowedCategories = ["4-5", "3", "heaven-on-sea", "boonmax-carnival", "rustar", "najom"];
+    if (category && typeof category === "string" && allowedCategories.includes(category.trim())) {
+      update.category = category.trim();
     }
     if (date !== undefined) {
       update.date = date;
@@ -101,7 +102,7 @@ export async function PUT(request: NextRequest, context: Context) {
 
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
-    console.error("Error updating star booking:", error);
+    console.error("Error updating booking:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
@@ -128,7 +129,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
 
     return NextResponse.json({ message: "Booking deleted" }, { status: 200 });
   } catch (error) {
-    console.error("Error deleting star booking:", error);
+    console.error("Error deleting booking:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
@@ -137,4 +138,3 @@ export async function DELETE(_request: NextRequest, context: Context) {
     );
   }
 }
-

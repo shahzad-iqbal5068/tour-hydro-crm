@@ -1,13 +1,13 @@
- "use client";
+"use client";
 
 import { useMemo, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { useStarBookings, useUsersList } from "@/hooks/api";
 import { PageLoader } from "@/components/ui/PageLoader";
-import BookingForm, { type BookingFormValues, type BookingVariant } from "./BookingForm";
+import type { BookingVariantOption } from "@/types/booking";
+import { CANAL_VARIANTS } from "./bookingVariants";
+import BookingForm, { type BookingFormValues } from "./BookingForm";
 import BookingTable, { type BookingTableRow } from "./BookingTable";
-
-type ViewFilter = "all" | "4-5" | "3";
 
 function mapRowToFormValues(row: BookingTableRow): BookingFormValues {
   const rowDate = row.date ?? (row as { createdAt?: string }).createdAt;
@@ -30,12 +30,17 @@ function mapRowToFormValues(row: BookingTableRow): BookingFormValues {
 }
 
 export default function BookingClient({
-  initialVariant = "4-5",
+  variants = CANAL_VARIANTS,
+  initialVariant,
 }: {
-  initialVariant?: BookingVariant;
+  /** Variant options for this location (Canal, Marina, Creek). Defaults to Canal (3 Star, 4–5 Star). */
+  variants?: BookingVariantOption[];
+  /** Initial view filter (variant value or "all"). Defaults to first variant. */
+  initialVariant?: string;
 }) {
-  const [viewFilter, setViewFilter] = useState<ViewFilter>(initialVariant);
-  const [formCategory, setFormCategory] = useState<BookingVariant>("4-5");
+  const categoryValues = variants.map((v) => v.value);
+  const [viewFilter, setViewFilter] = useState<string>(initialVariant ?? (categoryValues[0] ?? "all"));
+  const [formCategory, setFormCategory] = useState<string>(initialVariant ?? categoryValues[0] ?? "4-5");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -46,7 +51,7 @@ export default function BookingClient({
     updateMutation,
     deleteMutation,
     followUpDoneMutation,
-  } = useStarBookings(viewFilter === "all" ? "all" : viewFilter);
+  } = useStarBookings(viewFilter === "all" ? "all" : categoryValues);
   const { data: users = [] } = useUsersList();
   const deleteLoading = deleteMutation.isPending;
   const followUpDoneId = followUpDoneMutation.isPending ? followUpDoneMutation.variables ?? null : null;
@@ -66,12 +71,12 @@ export default function BookingClient({
 
   const handleNew = () => {
     setSelectedId(null);
-    setFormCategory(viewFilter === "3" ? "3" : "4-5");
+    setFormCategory(viewFilter === "all" ? categoryValues[0] ?? "4-5" : viewFilter);
   };
 
-  const handleViewFilterChange = (filter: ViewFilter) => {
+  const handleViewFilterChange = (filter: string) => {
     setViewFilter(filter);
-    setFormCategory(filter === "3" ? "3" : "4-5");
+    setFormCategory(filter === "all" ? categoryValues[0] ?? "4-5" : filter);
     handleNew();
   };
 
@@ -102,7 +107,7 @@ export default function BookingClient({
       }
       toast.success(isEditing ? "Booking updated" : "Booking added");
       setSelectedId(null);
-      setFormCategory(viewFilter === "all" ? "4-5" : viewFilter);
+      setFormCategory(viewFilter === "all" ? categoryValues[0] ?? "4-5" : viewFilter);
     } catch (err) {
       console.error(err);
       toast.error("Failed to save booking");
@@ -155,6 +160,7 @@ export default function BookingClient({
       <BookingTable
         data={rows}
         isLoading={false}
+        variants={variants}
         viewFilter={viewFilter}
         onViewFilterChange={handleViewFilterChange}
         onNewBooking={handleNew}
@@ -167,6 +173,7 @@ export default function BookingClient({
       <BookingForm
         key={selectedId ?? "new"}
         initialValues={formInitialValues}
+        variants={variants}
         formCategory={formCategory}
         onFormCategoryChange={setFormCategory}
         isEditing={isEditing}

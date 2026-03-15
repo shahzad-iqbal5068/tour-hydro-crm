@@ -2,23 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
-import type { SectionKey } from "@/types";
-
-type SidebarSection = {
-  key: SectionKey;
-  label: string;
-  icon: ReactNode;
-  items: { href: string; label: string; icon?: ReactNode }[];
-};
-
-type SidebarProps = {
-  sections: SidebarSection[];
-  activeSection: SectionKey;
-  onActiveSectionChange: (key: SectionKey) => void;
-  isMobileOpen?: boolean;
-  onCloseMobile?: () => void;
-};
+import type { SidebarProps } from "@/types/sidebar";
 
 export function Sidebar({
   sections,

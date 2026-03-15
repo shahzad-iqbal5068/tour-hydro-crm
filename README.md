@@ -119,7 +119,7 @@ src/
 | **Auth** | `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` |
 | **Profile** | `PUT /api/profile` |
 | **Inquiries** | `GET/POST /api/inquiries`, `GET/PUT/DELETE /api/inquiries/[id]` |
-| **Star bookings** | `GET/POST /api/star-bookings`, `GET/PUT/DELETE /api/star-bookings/[id]`, `PUT .../followup` |
+| **Bookings** | `GET/POST /api/bookings`, `GET/PUT/DELETE /api/bookings/[id]`, `PUT .../followup` |
 | **Group bookings** | `GET/POST /api/group-bookings`, `GET/PUT/DELETE /api/group-bookings/[id]` |
 | **Group dashboard leads** | `GET/POST /api/group-dashboard-leads` |
 | **Dashboard** | `GET /api/dashboard/stats?period=...` |

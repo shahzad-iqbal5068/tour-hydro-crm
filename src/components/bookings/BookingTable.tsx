@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Trash2, Search, ArrowUpDown, MessageCircle, CheckCircle ,Star } from "lucide-react";
+import { Pencil, Trash2, Search, ArrowUpDown, MessageCircle, CheckCircle, Star } from "lucide-react";
+import type { BookingVariantOption } from "@/types/booking";
 import {
   flexRender,
   getCoreRowModel,
@@ -14,11 +15,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-export type BookingVariant = "4-5" | "3";
-
 export type BookingTableRow = {
   _id: string;
-  category: BookingVariant;
+  category: string;
   date?: string | null;
   time: string;
   pax: number;
@@ -59,8 +58,9 @@ function whatsappNumber(phone: string): string {
 export type BookingTableProps = {
   data: BookingTableRow[];
   isLoading: boolean;
-  viewFilter: "all" | "4-5" | "3";
-  onViewFilterChange: (filter: "all" | "4-5" | "3") => void;
+  variants: BookingVariantOption[];
+  viewFilter: string;
+  onViewFilterChange: (filter: string) => void;
   onNewBooking: () => void;
   onEdit: (row: BookingTableRow) => void;
   onDeleteClick: (id: string) => void;
@@ -68,9 +68,14 @@ export type BookingTableProps = {
   followUpDoneId: string | null;
 };
 
+function getCategoryLabel(variants: BookingVariantOption[], category: string): string {
+  return variants.find((v) => v.value === category)?.label ?? category;
+}
+
 export default function BookingTable({
   data,
   isLoading,
+  variants,
   viewFilter,
   onViewFilterChange,
   onNewBooking,
@@ -92,7 +97,7 @@ export default function BookingTable({
               header: "Category",
               cell: ({ row }: { row: { original: BookingTableRow } }) => (
                 <span className="text-zinc-700 dark:text-zinc-200">
-                  {row.original.category === "4-5" ? "4–5 Star" : "3 Star"}
+                  {getCategoryLabel(variants, row.original.category)}
                 </span>
               ),
             } as ColumnDef<BookingTableRow>,
@@ -214,7 +219,7 @@ export default function BookingTable({
         },
       },
     ],
-    [viewFilter, onEdit, onDeleteClick, onFollowUpDone, followUpDoneId]
+    [viewFilter, variants, onEdit, onDeleteClick, onFollowUpDone, followUpDoneId]
   );
 
   const table = useReactTable({
@@ -266,7 +271,7 @@ export default function BookingTable({
           </p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-          <div className="inline-flex rounded-md border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="inline-flex flex-wrap gap-1 rounded-md border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-800 dark:bg-zinc-900">
             <button
               type="button"
               onClick={() => onViewFilterChange("all")}
@@ -278,29 +283,23 @@ export default function BookingTable({
             >
               All
             </button>
-            <button
-              type="button"
-              onClick={() => onViewFilterChange("4-5")}
-              className={`flex items-center gap-1 rounded px-2 py-1.5 text-[11px] font-medium ${
-                viewFilter === "4-5"
-                  ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600 dark:text-white"
-                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
-              }`}
-            >
-              4–5<Star className="h-3 w-3 fill-blue-400" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onViewFilterChange("3")}
-              className={`flex items-center gap-1 rounded px-2 py-1.5 text-[11px] font-medium ${
-                viewFilter === "3"
-                  ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600 dark:text-white"
-                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
-              }`}
-            >
-              3<Star className="h-3 w-3 fill-green-400" />
-              
-            </button>
+            {variants.map((v) => (
+              <button
+                key={v.value}
+                type="button"
+                onClick={() => onViewFilterChange(v.value)}
+                className={`flex items-center gap-1 rounded px-2 py-1.5 text-[11px] font-medium ${
+                  viewFilter === v.value
+                    ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600 dark:text-white"
+                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
+                }`}
+              >
+                {v.label}
+                {v.value === "4-5" || v.value === "3" ? (
+                  <Star className="h-3 w-3 fill-current opacity-80" />
+                ) : null}
+              </button>
+            ))}
           </div>
           <button
             type="button"

@@ -20,6 +20,9 @@ import {
   Users,
   ClipboardCheck,
   CalendarCheck,
+  Anchor,
+  Sailboat,
+  Ship,
 } from "lucide-react";
 
 const sections: {
@@ -52,9 +55,11 @@ const sections: {
       label: "Bookings",
       icon: <TicketPercent className="h-5 w-5" />,
       items: [
-        { href: "/bookings", label: "Bookings", icon: <TicketPercent className="h-4 w-4" /> },
-        { href: "/bookings/group", label: "Group bookings", icon: <UsersRound className="h-4 w-4" /> },
-        { href: "/bookings/group/dashboard", label: "Group dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
+        { href: "/bookings/canal", label: "Canal", icon: <Ship className="h-6 w-6 text-blue-500" /> },
+        { href: "/bookings/marina", label: "Marina", icon: <Anchor className="h-6 w-6 text-yellow-500" /> },
+        { href: "/bookings/creek", label: "Creek", icon: <Sailboat className="h-6 w-6 text-green-500" /> },
+        { href: "/bookings/group", label: "Group bookings", icon: <UsersRound className="h-6 w-6 text-purple-500" /> },
+        { href: "/bookings/group/dashboard", label: "Group dashboard", icon: <LayoutDashboard className="h-6 w-6 text-sky-500" /> },
       ],
     },
     {
