@@ -63,11 +63,11 @@ export function Loader({
 
   if (inline && variant === "spinner" && !label) {
     return (
-      <span className={`inline-block ${className}`} role="status" aria-label="Loading">
-        <div
-          className={`${sizeClasses[size]} animate-spin rounded-full border-zinc-300 border-t-blue-500 dark:border-zinc-600 dark:border-t-blue-400`}
-        />
-      </span>
+      <span
+        className={`inline-block ${sizeClasses[size]} animate-spin rounded-full border-green-300 border-t-blue-500 dark:border-zinc-600 dark:border-t-blue-400 ${className}`}
+        role="status"
+        aria-label="Loading"
+      />
     );
   }
 
