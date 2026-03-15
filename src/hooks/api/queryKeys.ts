@@ -5,8 +5,10 @@
 export const queryKeys = {
   inquiries: () => ["inquiries"] as const,
   inquiry: (id: string | null) => ["inquiries", id] as const,
-  starBookings: (category?: string) =>
-    category ? (["star-bookings", category] as const) : (["star-bookings"] as const),
+  starBookings: (categories?: string | string[]) =>
+    categories != null
+      ? (["bookings", Array.isArray(categories) ? categories.sort().join(",") : categories] as const)
+      : (["bookings"] as const),
   groupBookings: () => ["group-bookings"] as const,
   groupDashboardLeads: () => ["group-dashboard-leads"] as const,
   followups: (date: string, category?: string) =>

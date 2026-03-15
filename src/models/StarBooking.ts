@@ -1,7 +1,8 @@
 import mongoose, { Schema, Model, Document } from "mongoose";
 
+/** Category: star tier (Canal) or cruise/location variant (Marina, Creek) */
 export interface IStarBooking extends Document {
-  category: "4-5" | "3";
+  category: string;
   date?: Date;
   time: string;
   pax: number;
@@ -23,11 +24,7 @@ export interface IStarBooking extends Document {
 
 const StarBookingSchema = new Schema<IStarBooking>(
   {
-    category: {
-      type: String,
-      enum: ["4-5", "3"],
-      required: true,
-    },
+    category: { type: String, required: true },
     date: { type: Date },
     time: { type: String, required: true },
     pax: { type: Number, required: true },

@@ -5,6 +5,7 @@
  */
 
 export type { SectionKey } from "./layout";
+export type { SidebarSection, SidebarProps } from "./sidebar";
 export type { AuthUser, Role, UserRow } from "./user";
 export type { LoginValues } from "./auth";
 export type { InquiryRow, InquiryFormValues } from "./inquiry";
@@ -19,6 +20,7 @@ export type {
   StarBookingCategory,
   StarBookingRow,
   GroupBookingRow,
+  BookingVariantOption,
 } from "./booking";
 export type { FollowUpRow } from "./followup";
 export type { PerformanceData, PerformanceRange } from "./admin";

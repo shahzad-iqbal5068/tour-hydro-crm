@@ -24,12 +24,14 @@ export async function POST(request: NextRequest) {
     const followUpNote = body.followUpNote ?? undefined;
     const userId = body.userId ?? undefined;
 
-    if (!category || !["4-5", "3"].includes(category)) {
+    const allowedCategories = ["4-5", "3", "heaven-on-sea", "boonmax-carnival", "rustar", "najom"];
+    if (!category || typeof category !== "string" || !allowedCategories.includes(category.trim())) {
       return NextResponse.json(
-        { message: "Valid category (4-5 or 3) is required" },
+        { message: "Valid category is required" },
         { status: 400 }
       );
     }
+    const categoryValue = category.trim();
 
     if (!time || !pax || !guestName || !phone) {
       return NextResponse.json(
@@ -41,7 +43,7 @@ export async function POST(request: NextRequest) {
     await connectToDatabase();
 
     const booking = await StarBooking.create({
-      category,
+      category: categoryValue,
       date,
       time,
       pax,
@@ -60,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(booking, { status: 201 });
   } catch (error) {
-    console.error("Error creating star booking:", error);
+    console.error("Error creating booking:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
@@ -70,16 +72,19 @@ export async function POST(request: NextRequest) {
   }
 }
 
+const ALLOWED_CATEGORIES = ["4-5", "3", "heaven-on-sea", "boonmax-carnival", "rustar", "najom"];
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get("category");
+    const categoryParam = searchParams.get("category");
+    const categories = categoryParam
+      ? categoryParam.split(",").map((c) => c.trim()).filter((c) => ALLOWED_CATEGORIES.includes(c))
+      : [];
 
     await connectToDatabase();
 
-    const query = category && ["4-5", "3"].includes(category)
-      ? { category }
-      : {};
+    const query = categories.length > 0 ? { category: { $in: categories } } : {};
 
     const bookings = await StarBooking.find(query)
       .sort({ createdAt: -1 })
@@ -87,7 +92,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data: bookings }, { status: 200 });
   } catch (error) {
-    console.error("Error fetching star bookings:", error);
+    console.error("Error fetching bookings:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
@@ -96,4 +101,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

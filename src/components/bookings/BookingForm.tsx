@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import type { BookingVariantOption } from "@/types/booking";
 
 export type BookingFormValues = {
   date: string;
@@ -19,8 +20,6 @@ export type BookingFormValues = {
   followUpNote: string;
   userId: string;
 };
-
-export type BookingVariant = "4-5" | "3";
 
 export function getDefaultFormValues(): BookingFormValues {
   return {
@@ -73,8 +72,9 @@ type UserOption = { id: string; name: string };
 
 export type BookingFormProps = {
   initialValues?: BookingFormValues | null;
-  formCategory: BookingVariant;
-  onFormCategoryChange: (value: BookingVariant) => void;
+  variants: BookingVariantOption[];
+  formCategory: string;
+  onFormCategoryChange: (value: string) => void;
   isEditing: boolean;
   users: UserOption[];
   onSubmit: (values: BookingFormValues) => Promise<void>;
@@ -83,6 +83,7 @@ export type BookingFormProps = {
 
 export default function BookingForm({
   initialValues,
+  variants,
   formCategory,
   onFormCategoryChange,
   isEditing,
@@ -144,47 +145,28 @@ export default function BookingForm({
       </p>
       <div>
         <label className={labelClass}>Category</label>
-        <div className="mt-1 inline-flex rounded-md border border-zinc-200 bg-zinc-50 p-0.5 dark:border-zinc-800 dark:bg-zinc-900">
-          <label className="cursor-pointer">
-            <input
-              type="radio"
-              name="category"
-              value="4-5"
-              checked={formCategory === "4-5"}
-              onChange={() => onFormCategoryChange("4-5")}
-              className="sr-only"
-            />
-            <span
-              className={`block rounded px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                formCategory === "4-5"
-                  ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600 dark:text-white"
-                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
-              }`}
-            >
-              4–5 Star
-            </span>
-          </label>
-          <label className="cursor-pointer">
-            <input
-              type="radio"
-              name="category"
-              value="3"
-              checked={formCategory === "3"}
-              onChange={() => onFormCategoryChange("3")}
-              className="sr-only"
-            />
-            <span
-              className={`block rounded px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                formCategory === "3"
-                  ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600 dark:text-white"
-                  // ? "bg-blue-600 text-white shadow-sm"
-
-                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
-              }`}
-            >
-              3 Star
-            </span>
-          </label>
+        <div className="mt-1 inline-flex flex-wrap gap-0.5 rounded-md border border-zinc-200 bg-zinc-50 p-0.5 dark:border-zinc-800 dark:bg-zinc-900">
+          {variants.map((v) => (
+            <label key={v.value} className="cursor-pointer">
+              <input
+                type="radio"
+                name="category"
+                value={v.value}
+                checked={formCategory === v.value}
+                onChange={() => onFormCategoryChange(v.value)}
+                className="sr-only"
+              />
+              <span
+                className={`block rounded px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                  formCategory === v.value
+                    ? "bg-blue-600 text-white shadow-sm dark:bg-blue-600 dark:text-white"
+                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
+                }`}
+              >
+                {v.label}
+              </span>
+            </label>
+          ))}
         </div>
         <p className="mt-1 text-[10px] text-zinc-500 dark:text-zinc-400">
           {isEditing ? "Booking category (from row)." : "Choose category for new booking."}

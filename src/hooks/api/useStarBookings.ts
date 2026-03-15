@@ -8,8 +8,15 @@ import { DEFAULT_STALE_MS, normalizeQueryError, wrapMutationResult } from "./que
 
 type StarBookingsResponse = { data: StarBookingRow[] };
 
-export function useStarBookings(category?: "4-5" | "3" | "all") {
-  const effectiveCategory = category === "all" ? undefined : category;
+/** Pass a list of category values to filter (e.g. ["3","4-5"] for Canal, ["heaven-on-sea","boonmax-carnival"] for Marina). Omit or pass "all" for no filter. */
+export function useStarBookings(categories?: "all" | string | string[]) {
+  const effectiveCategories =
+    categories === "all" || categories === undefined
+      ? undefined
+      : Array.isArray(categories)
+        ? categories
+        : [categories];
+  const queryKey = queryKeys.starBookings(effectiveCategories);
   const queryClient = useQueryClient();
 
   const {
@@ -17,11 +24,12 @@ export function useStarBookings(category?: "4-5" | "3" | "all") {
     isLoading,
     error,
   } = useQuery({
-    queryKey: queryKeys.starBookings(effectiveCategory),
+    queryKey,
     queryFn: async () => {
-      const url = effectiveCategory
-        ? `/api/star-bookings?category=${effectiveCategory}`
-        : "/api/star-bookings";
+      const url =
+        effectiveCategories && effectiveCategories.length > 0
+          ? `/api/bookings?category=${effectiveCategories.join(",")}`
+          : "/api/bookings";
       return apiFetcher<StarBookingsResponse>(url);
     },
     staleTime: DEFAULT_STALE_MS,
@@ -29,18 +37,17 @@ export function useStarBookings(category?: "4-5" | "3" | "all") {
 
   const data = response?.data ?? [];
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: queryKeys.starBookings(effectiveCategory) });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey });
 
   const createMutation = useMutation({
     mutationFn: (body: Record<string, unknown>) =>
-      apiMutation<StarBookingRow>("/api/star-bookings", "POST", body),
+      apiMutation<StarBookingRow>("/api/bookings", "POST", body),
     onSuccess: () => invalidate(),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, body }: { id: string; body: Record<string, unknown> }) =>
-      apiMutation<StarBookingRow>(`/api/star-bookings/${id}`, "PUT", body),
+      apiMutation<StarBookingRow>(`/api/bookings/${id}`, "PUT", body),
     onSuccess: () => invalidate(),
   });
 
@@ -52,7 +59,7 @@ export function useStarBookings(category?: "4-5" | "3" | "all") {
 
   const followUpDoneMutation = useMutation({
     mutationFn: (id: string) =>
-      apiMutation<StarBookingRow>(`/api/star-bookings/${id}/followup`, "PUT", {}),
+      apiMutation<StarBookingRow>(`/api/bookings/${id}/followup`, "PUT", {}),
     onSuccess: () => invalidate(),
   });
 

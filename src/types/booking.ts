@@ -5,10 +5,10 @@
 /** Star booking category filter / form value */
 export type StarBookingCategory = "4-5" | "3" | "all";
 
-/** Star booking row from API */
+/** Star booking row from API (category = star tier or cruise/location variant) */
 export type StarBookingRow = {
   _id: string;
-  category: "4-5" | "3";
+  category: string;
   date?: string | null;
   time: string;
   pax: number;
@@ -44,3 +44,6 @@ export type GroupBookingRow = {
   callingDate?: string | null;
   remarks?: string | null;
 };
+
+/** Variant option for location-based booking tabs (Canal, Marina, Creek) */
+export type BookingVariantOption = { value: string; label: string };

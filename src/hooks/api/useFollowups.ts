@@ -36,7 +36,7 @@ export function useFollowups(date: string, category?: "all" | "4-5" | "3") {
 
   const followUpDoneMutation = useMutation({
     mutationFn: (id: string) =>
-      apiMutation<FollowUpRow>(`/api/star-bookings/${id}/followup`, "PUT", {}),
+      apiMutation<FollowUpRow>(`/api/bookings/${id}/followup`, "PUT", {}),
     onSuccess: () => invalidate(),
   });
 
