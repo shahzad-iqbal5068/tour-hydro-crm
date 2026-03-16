@@ -8,8 +8,6 @@ import {
   dashboardKPI,
   dashboardAlerts,
   dashboardTabs,
-  masterGroupRows,
-  todayFollowUpRows,
   visitLeadRows,
   dueIn15Item,
   liveActivities,
@@ -56,8 +54,8 @@ export default function GroupBookingDashboardClient() {
     }));
   }, [apiLeads]);
 
-  const allMasterRows =
-    apiLeads.length > 0 ? masterRowsFromApi : masterGroupRows;
+  // Use only live data from the database for the master dashboard
+  const allMasterRows = masterRowsFromApi;
 
   /** When a WhatsApp tab is selected, show only that WhatsApp; otherwise show all. Calendar uses all rows. */
   const masterRows =
@@ -83,6 +81,7 @@ export default function GroupBookingDashboardClient() {
       toast.error("Failed to delete group lead");
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
@@ -131,16 +130,16 @@ export default function GroupBookingDashboardClient() {
             <div className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {activeTab === "calendar"
+                    {apiLeads.length === 0
+                      ? "No group leads in database yet. Add a group lead to get started."
+                      : activeTab === "calendar"
                         ? `${allMasterRows.length} follow-up entr${allMasterRows.length === 1 ? "y" : "ies"}`
-                        : apiLeads.length > 0
-                          ? activeTab === "control-tower"
-                            ? `${apiLeads.length} lead(s) from database`
-                            : `${masterRows.length} lead(s) for ${activeTab}`
-                          : "Sample data below. Add a lead to save to the database."}
+                        : activeTab === "control-tower"
+                          ? `${apiLeads.length} lead(s) in database`
+                          : `${masterRows.length} lead(s) for ${activeTab}`}
                   </span>
                   <Link
-                    href="/bookings/group/dashboard/lead/new"
+                    href="/bookings/group/gb-form"
                     className="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
                   >
                     + Add group lead
@@ -158,7 +157,7 @@ export default function GroupBookingDashboardClient() {
               </div>
             <div className="flex flex-col gap-6 lg:flex-row lg:justify-between lg:items-start">
               <div className="min-w-0 flex-1 lg:min-w-0">
-                <TodayFollowUpsTable rows={todayFollowUpRows} />
+                <TodayFollowUpsTable rows={masterRows} />
               </div>
               <div className="min-w-0 shrink-0 lg:w-80">
                 <LiveActivityMonitor activities={liveActivities} />

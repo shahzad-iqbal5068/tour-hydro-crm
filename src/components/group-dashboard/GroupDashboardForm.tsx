@@ -96,7 +96,7 @@ export default function GroupDashboardForm({
         {isEditing ? "Edit Group Lead" : "Add Group Lead"}
       </h2>
       <p className="mb-4 text-[11px] text-zinc-600 dark:text-zinc-400">
-        Enter all details to store in the database. Data will appear in the
+        Enter all details of group lead to store in the database. Data will appear in the
         master group booking dashboard after save.
       </p>
       <form

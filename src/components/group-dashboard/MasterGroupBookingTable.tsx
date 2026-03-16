@@ -55,6 +55,7 @@ function rowMatchesSearch(r: MasterGroupRow, q: string): boolean {
 }
 
 export default function MasterGroupBookingTable({ rows, onEdit, onDelete }: MasterGroupBookingTableProps) {
+  // console.log("MasterGroupBookingTable rows", rows,onEdit, onDelete);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [locationFilter, setLocationFilter] = useState("all");
