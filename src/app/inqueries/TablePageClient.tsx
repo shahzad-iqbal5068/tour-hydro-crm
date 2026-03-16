@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Toaster, toast } from "react-hot-toast";
 import type { InquiryFormValues as FormValues, AuthUser } from "@/types";
-import { useInquiries, useInquiry, useUsersList, type UserOption } from "@/hooks/api";
+import { useInquiries, useInquiry, useUsersList } from "@/hooks/api";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { InquiriesTable } from "./InquiriesTable";
 import { InquiryForm } from "./InquiryForm";
@@ -23,6 +23,7 @@ export default function TablePageClient() {
   const deleteLoading = deleteMutation.isPending;
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     const cookie = typeof document !== "undefined" ? document.cookie : "";
     const token = cookie
