@@ -88,6 +88,12 @@ export default function BookingTable({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
+  const filteredData = useMemo(
+    () => (viewFilter === "all" ? data : data.filter((row) => row.category === viewFilter)),
+    [data, viewFilter]
+  );
+  console.log("filteredData", filteredData);
+
   const columns = useMemo<ColumnDef<BookingTableRow>[]>(
     () => [
       ...(viewFilter === "all"
@@ -223,7 +229,7 @@ export default function BookingTable({
   );
 
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     state: { sorting, globalFilter: globalQuery, columnFilters },
     onSortingChange: setSorting,
@@ -260,6 +266,7 @@ export default function BookingTable({
 
   const deckFilter = (table.getColumn("deck")?.getFilterValue() as string) ?? "";
   const dateFilter = (table.getColumn("date")?.getFilterValue() as string) ?? "";
+  console.log("deckFilter", filteredData);
 
   return (
     <div className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white p-4 text-xs shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
