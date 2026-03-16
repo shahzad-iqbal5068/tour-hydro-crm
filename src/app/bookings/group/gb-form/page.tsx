@@ -1,18 +1,8 @@
-// import type { Metadata } from "next";
-// import GroupBookingDashboardClient from "@/components/group-dashboard/GroupBookingDashboardClient";
 
-// export const metadata: Metadata = {
-//   title: "Group Booking Dashboard | Hydro CRM",
-//   description:
-//     "Control tower for group inquiry, follow-up, visit tracking, reminders and WhatsApp-wise booking management.",
-// };
-
-// export default function GroupBookingDashboardPage() {
-//   return <GroupBookingDashboardClient />;
-// }
 
 
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import GroupDashboardLeadNewClient from "./GroupDashboardLeadNewClient";
 
 export const metadata: Metadata = {
@@ -21,5 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default function GroupDashboardLeadNewPage() {
-  return <GroupDashboardLeadNewClient />;
+  return (
+    <Suspense fallback={<div className="p-4 text-sm text-zinc-500">Loading group lead form…</div>}>
+      <GroupDashboardLeadNewClient />
+    </Suspense>
+  );
 }
