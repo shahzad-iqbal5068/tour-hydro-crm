@@ -39,16 +39,17 @@ export async function PUT(request: NextRequest, context: Context) {
 
   try {
     const body = await request.json();
-    const { date, shift, whatsappName, remarks, userId } = body;
+    const { date, shift, whatsappName, remarks, contact, userId } = body;
 
     await connectToDatabase();
 
-    const update: Record<string, unknown> = {
-      date: date ? new Date(date) : undefined,
-      shift,
-      whatsappName,
-      remarks,
-    };
+    const update: Record<string, unknown> = {};
+
+    if (date) update.date = new Date(date);
+    if (shift !== undefined) update.shift = shift;
+    if (whatsappName !== undefined) update.whatsappName = whatsappName;
+    if (remarks !== undefined) update.remarks = remarks;
+    if (contact !== undefined) update.contact = contact;
     if (userId !== undefined) {
       update.userId = userId || null;
     }

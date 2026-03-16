@@ -179,3 +179,17 @@ export type GroupDashboardFormValues = {
   remainingAmount: number;
   updateTimestamp: string;
 };
+
+export type TodayFollowUpRow = {
+  id: string;
+  whatsapp: string;
+  contact: string;
+  numberOfPersons: number;
+  groupNo: string;
+  bookingStatus: string;
+  lastFollowUpDate: string;
+  remarks: string;
+  callingDate: string;
+  /** Optional remaining amount; if > 0, treat as unpaid/needs follow-up */
+  remainingAmount?: number | string;
+};

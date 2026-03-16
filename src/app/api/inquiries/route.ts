@@ -5,7 +5,7 @@ import { Inquiry } from "@/models/Inquiry";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { date, shift, whatsappName, remarks, userId } = body;
+    const { date, shift, whatsappName, remarks, contact, userId } = body;
 
     if (!date || !shift || !whatsappName) {
       return NextResponse.json(
@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
       shift,
       whatsappName,
       remarks,
+      contact,
       userId: userId || undefined,
     });
 
