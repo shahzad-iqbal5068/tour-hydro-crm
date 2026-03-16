@@ -52,7 +52,7 @@ export function Navbar({
   const avatarSrc = user ? ensureImageUrl(user.avatarUrl) : undefined;
 
   return (
-    <header className="flex min-w-0 items-center justify-between gap-2 border-b border-zinc-200 bg-white px-3 py-3 text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:px-4">
+    <header className="fixed inset-x-0 top-0 z-40 flex min-w-0 items-center justify-between gap-2 border-b border-zinc-200 bg-white px-3 py-3 text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:px-4">
       <div className="flex min-w-0 items-center gap-2">
         <button
           type="button"

@@ -30,6 +30,27 @@ export function useGroupDashboardLeads() {
       queryClient.invalidateQueries({ queryKey: queryKeys.groupDashboardLeads() }),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiMutation<{ message: string }>(
+        `/api/group-dashboard-leads?id=${encodeURIComponent(id)}`,
+        "DELETE"
+      ),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.groupDashboardLeads() }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Record<string, unknown> }) =>
+      apiMutation<GroupDashboardLeadRow>(
+        `/api/group-dashboard-leads?id=${encodeURIComponent(id)}`,
+        "PUT",
+        body
+      ),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.groupDashboardLeads() }),
+  });
+
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: queryKeys.groupDashboardLeads() });
 
@@ -39,5 +60,7 @@ export function useGroupDashboardLeads() {
     error: normalizeQueryError(error),
     invalidate,
     createMutation: wrapMutationResult(createMutation),
+    deleteMutation: wrapMutationResult(deleteMutation),
+    updateMutation: wrapMutationResult(updateMutation),
   };
 }

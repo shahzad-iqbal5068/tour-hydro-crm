@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
+import { Toaster, toast } from "react-hot-toast";
 import {
   dashboardKPI,
   dashboardAlerts,
@@ -25,9 +27,10 @@ import DueIn15MinutesCard from "./DueIn15MinutesCard";
 import LiveActivityMonitor from "./LiveActivityMonitor";
 
 export default function GroupBookingDashboardClient() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("control-tower");
   const [alerts, setAlerts] = useState(dashboardAlerts);
-  const { data: apiLeads } = useGroupDashboardLeads();
+  const { data: apiLeads, deleteMutation } = useGroupDashboardLeads();
 
   const masterRowsFromApi: MasterGroupRow[] = useMemo(() => {
     return apiLeads.map((row) => ({
@@ -66,9 +69,25 @@ export default function GroupBookingDashboardClient() {
     setAlerts((prev) => prev.filter((a) => a.id !== id));
   };
 
+  const handleEditLead = (row: MasterGroupRow) => {
+    router.push(`/bookings/group/gb-form?id=${row.id}`);
+  };
+
+  const handleDeleteLead = async (row: MasterGroupRow) => {
+    if (!window.confirm(`Delete group lead for ${row.customerName}?`)) return;
+    try {
+      await deleteMutation.mutateAsync(row.id);
+      toast.success("Group lead deleted");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete group lead");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <Toaster position="top-right" />
         {/* Header row: title left, follow-up & reminder alerts top right */}
         <div className="mb-6 relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <header className="min-w-full flex-1">
@@ -130,7 +149,11 @@ export default function GroupBookingDashboardClient() {
                 {activeTab === "calendar" ? (
                   <GroupDashboardCalendarCards rows={allMasterRows} />
                 ) : (
-                  <MasterGroupBookingTable rows={masterRows} />
+                  <MasterGroupBookingTable
+                    rows={masterRows}
+                    onEdit={handleEditLead}
+                    onDelete={handleDeleteLead}
+                  />
                 )}
               </div>
             <div className="flex flex-col gap-6 lg:flex-row lg:justify-between lg:items-start">

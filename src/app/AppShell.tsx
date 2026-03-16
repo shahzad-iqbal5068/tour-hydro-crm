@@ -58,8 +58,8 @@ const sections: {
         { href: "/bookings/canal", label: "Canal", icon: <Ship className="h-6 w-6 text-blue-500" /> },
         { href: "/bookings/marina", label: "Marina", icon: <Anchor className="h-6 w-6 text-yellow-500" /> },
         { href: "/bookings/creek", label: "Creek", icon: <Sailboat className="h-6 w-6 text-green-500" /> },
-        { href: "/bookings/group", label: "Group bookings", icon: <UsersRound className="h-6 w-6 text-purple-500" /> },
-        { href: "/bookings/group/dashboard", label: "Group dashboard", icon: <LayoutDashboard className="h-6 w-6 text-sky-500" /> },
+        { href: "/bookings/group", label: "Group Dashboard",  icon: <LayoutDashboard className="h-6 w-6 text-sky-500" /> },
+        { href: "/bookings/group/gb-form", label: "New Group", icon: <ClipboardList className="h-6 w-6 text-purple-500" /> },
       ],
     },
     {
@@ -218,7 +218,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-700 dark:bg-black dark:text-zinc-50">
+    <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-700 dark:bg-black dark:text-zinc-50 overflow-hidden">
       <Navbar
         sectionLabel={currentSection.label}
         theme={theme}
@@ -230,7 +230,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         }
       />
 
-      <div className="flex flex-1">
+      {/* Reserve space for fixed navbar (approx 56px height) */}
+      <div className="flex flex-1 pt-14 overflow-hidden">
         <Sidebar
           sections={visibleSections}
           activeSection={activeSection}
@@ -239,7 +240,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           onCloseMobile={() => setMobileSidebarOpen(false)}
         />
 
-        <main className="min-w-0 flex-1 bg-zinc-50 p-4 text-zinc-700 dark:bg-black dark:text-zinc-50 md:p-6">
+        <main className="min-w-0 flex-1 bg-zinc-50 p-4 text-zinc-700 dark:bg-black dark:text-zinc-50 md:p-6 overflow-y-auto">
           {children}
         </main>
       </div>

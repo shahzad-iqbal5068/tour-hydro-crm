@@ -103,200 +103,202 @@ export default function GroupDashboardForm({
         className="space-y-4"
         onSubmit={handleSubmit(handleFormSubmit)}
       >
-        <div>
-          <label className={labelClass}>Inquiry Date</label>
-          <input
-            type="date"
-            className={inputClass}
-            min={today}
-            {...register("inquiryDate", { required: true })}
-          />
-        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div>
+            <label className={labelClass}>Inquiry Date</label>
+            <input
+              type="date"
+              className={inputClass}
+              min={today}
+              {...register("inquiryDate", { required: true })}
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>WhatsApp</label>
-          <select
-            className={inputClass}
-            {...register("whatsapp", { required: true })}
-          >
-            {GROUP_DASHBOARD_WHATSAPP_OPTIONS.map((w) => (
-              <option key={w} value={w}>
-                {w}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div>
+            <label className={labelClass}>WhatsApp</label>
+            <select
+              className={inputClass}
+              {...register("whatsapp", { required: true })}
+            >
+              {GROUP_DASHBOARD_WHATSAPP_OPTIONS.map((w) => (
+                <option key={w} value={w}>
+                  {w}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div>
-          <label className={labelClass}>Assigned Person</label>
-          <select className={inputClass} {...register("assignedPerson")}>
-            <option value="">Select user</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div>
+            <label className={labelClass}>Assigned Person</label>
+            <select className={inputClass} {...register("assignedPerson")}>
+              <option value="">Select user</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div>
-          <label className={labelClass}>Confirm booking date</label>
-          <input
-            type="date"
-            className={inputClass}
-            {...register("confirmBookingDate")}
-          />
-        </div>
+          <div>
+            <label className={labelClass}>Confirm booking date</label>
+            <input
+              type="date"
+              className={inputClass}
+              {...register("confirmBookingDate")}
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>Customer Name</label>
-          <input
-            type="text"
-            className={inputClass}
-            {...register("customerName", { required: true })}
-            placeholder="e.g. Farhan Traders"
-          />
-        </div>
+          <div>
+            <label className={labelClass}>Customer Name</label>
+            <input
+              type="text"
+              className={inputClass}
+              {...register("customerName", { required: true })}
+              placeholder="e.g. Farhan Traders"
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>Contact</label>
-          <input
-            type="text"
-            className={inputClass}
-            {...register("contact", { required: true })}
-            placeholder="+9715xxxx"
-          />
-        </div>
+          <div>
+            <label className={labelClass}>Contact</label>
+            <input
+              type="text"
+              className={inputClass}
+              {...register("contact", { required: true })}
+              placeholder="+9715xxxx"
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>No. of persons</label>
-          <input
-            type="number"
-            min={0}
-            className={inputClass}
-            {...register("numberOfPersons", { valueAsNumber: true })}
-          />
-        </div>
+          <div>
+            <label className={labelClass}>No. of persons</label>
+            <input
+              type="number"
+              min={0}
+              className={inputClass}
+              {...register("numberOfPersons", { valueAsNumber: true })}
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>Cruise Name</label>
-          <input
-            type="text"
-            className={inputClass}
-            {...register("cruiseName")}
-            placeholder="Cruise name"
-          />
-        </div>
+          <div>
+            <label className={labelClass}>Cruise Name</label>
+            <input
+              type="text"
+              className={inputClass}
+              {...register("cruiseName")}
+              placeholder="Cruise name"
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>Slot timing</label>
-          <input
-            type="text"
-            className={inputClass}
-            {...register("slotTiming")}
-            placeholder="e.g. 6:30 PM"
-          />
-        </div>
+          <div>
+            <label className={labelClass}>Slot timing</label>
+            <input
+              type="text"
+              className={inputClass}
+              {...register("slotTiming")}
+              placeholder="e.g. 6:30 PM"
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>Location</label>
-          <select
-            className={inputClass}
-            {...register("location", { required: true })}
-          >
-            {GROUP_DASHBOARD_LOCATION_OPTIONS.map((l) => (
-              <option key={l} value={l}>
-                {l}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div>
+            <label className={labelClass}>Location</label>
+            <select
+              className={inputClass}
+              {...register("location", { required: true })}
+            >
+              {GROUP_DASHBOARD_LOCATION_OPTIONS.map((l) => (
+                <option key={l} value={l}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div>
-          <label className={labelClass}>Group No.</label>
-          <input
-            type="text"
-            className={inputClass}
-            {...register("groupNo")}
-            placeholder="Group number"
-          />
-        </div>
+          <div>
+            <label className={labelClass}>Group No.</label>
+            <input
+              type="text"
+              className={inputClass}
+              {...register("groupNo")}
+              placeholder="Group number"
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>Booking Status</label>
-          <select
-            className={inputClass}
-            {...register("bookingStatus", { required: true })}
-          >
-            {GROUP_DASHBOARD_BOOKING_STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div>
+            <label className={labelClass}>Booking Status</label>
+            <select
+              className={inputClass}
+              {...register("bookingStatus", { required: true })}
+            >
+              {GROUP_DASHBOARD_BOOKING_STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div>
-          <label className={labelClass}>Last Follow Up Date</label>
-          <input
-            type="date"
-            className={inputClass}
-            {...register("lastFollowUpDate")}
-          />
-        </div>
+          <div>
+            <label className={labelClass}>Last Follow Up Date</label>
+            <input
+              type="date"
+              className={inputClass}
+              {...register("lastFollowUpDate")}
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>Remarks</label>
-          <textarea
-            rows={3}
-            className={inputClass}
-            {...register("remarks")}
-            placeholder="Notes, remarks, etc."
-          />
-        </div>
+          <div className="col-span-2 md:col-span-3 lg:col-span-4">
+            <label className={labelClass}>Remarks</label>
+            <textarea
+              rows={3}
+              className={inputClass}
+              {...register("remarks")}
+              placeholder="Notes, remarks, etc."
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>Calling date</label>
-          <input
-            type="date"
-            className={inputClass}
-            {...register("callingDate")}
-          />
-        </div>
+          <div>
+            <label className={labelClass}>Calling date</label>
+            <input
+              type="date"
+              className={inputClass}
+              {...register("callingDate")}
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>Total amount</label>
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            className={inputClass}
-            {...register("totalAmount", { valueAsNumber: true })}
-          />
-        </div>
+          <div>
+            <label className={labelClass}>Total amount</label>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              className={inputClass}
+              {...register("totalAmount", { valueAsNumber: true })}
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>Advance Paid</label>
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            className={inputClass}
-            {...register("advancePaid", { valueAsNumber: true })}
-          />
-        </div>
+          <div>
+            <label className={labelClass}>Advance Paid</label>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              className={inputClass}
+              {...register("advancePaid", { valueAsNumber: true })}
+            />
+          </div>
 
-        <div>
-          <label className={labelClass}>Remaining Amount</label>
-          <input
-            type="number"
-            readOnly
-            className={`${inputClass} bg-zinc-100 dark:bg-zinc-800`}
-            {...register("remainingAmount", { valueAsNumber: true })}
-          />
-          <p className="mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
-            Auto: Total amount − Advance paid
-          </p>
+          <div>
+            <label className={labelClass}>Remaining Amount</label>
+            <input
+              type="number"
+              readOnly
+              className={`${inputClass} bg-zinc-100 dark:bg-zinc-800`}
+              {...register("remainingAmount", { valueAsNumber: true })}
+            />
+            <p className="mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+              Auto: Total amount − Advance paid
+            </p>
+          </div>
         </div>
 
         {isEditing && (
@@ -319,7 +321,7 @@ export default function GroupDashboardForm({
             loading={isSubmitting}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Saving…" : "Save to database"}
+            {isSubmitting ? "Saving…" : "Save Group Lead"}
           </Button>
           {onCancel && (
             <Button type="button" variant="secondary" size="md" onClick={onCancel}>
