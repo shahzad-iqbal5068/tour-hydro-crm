@@ -5,6 +5,7 @@ import type { AuthUser } from "@/types";
 import { profileUpdate, uploadImage as apiUploadImage } from "@/lib/api";
 import { ensureImageUrl } from "@/lib/imageUrl";
 import { toast } from "react-hot-toast";
+import { Button } from "@/components/ui/Button";
 
 type ProfileInfoModalProps = {
   user: AuthUser;
@@ -33,23 +34,23 @@ export function ProfileInfoModal({
     .toUpperCase();
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-end bg-black/40 px-3">
-      <div className="w-full max-w-sm rounded-lg bg-white p-4 text-sm shadow-lg dark:bg-zinc-950 sm:p-5">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+    <div className="fixed inset-0 z-40 flex items-start justify-end bg-black/40 px-3 py-4">
+      <div className="w-full max-w-xs rounded-2xl bg-white text-sm text-zinc-900 shadow-2xl ring-1 ring-zinc-200 dark:bg-zinc-950 dark:text-zinc-100 dark:ring-zinc-800">
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          <div className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             Profile
-          </h2>
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            className="rounded-full px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
           >
             ✕
           </button>
         </div>
 
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-zinc-900 text-lg font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900">
+        <div className="flex flex-col items-center px-4 pb-3 pt-1">
+          <div className="mb-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-zinc-900 text-lg font-semibold text-white dark:bg-zinc-800">
             {(() => {
               const src = ensureImageUrl(user.avatarUrl);
               return src ? (
@@ -65,39 +66,118 @@ export function ProfileInfoModal({
             })()}
           </div>
           <div className="text-center">
-            <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+            <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
               {user.name}
             </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
-              {user.email}
-            </div>
-            <div className="mt-1 text-[11px] uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
               {user.role}
             </div>
           </div>
-          <div className="mt-3 flex w-full flex-col gap-2">
-            <button
-              type="button"
+
+          <div className="mt-4 grid w-full grid-cols-2 gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="justify-center bg-zinc-900 text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
               onClick={onOpenImageModal}
-              className="w-full rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
-              Change profile image
+              Upload image
+            </Button>
+            <Button
+              size="sm"
+              className="justify-center bg-emerald-600 text-white hover:bg-emerald-500"
+              onClick={onOpenImageModal}
+            >
+              Open camera
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-1 border-t border-zinc-200 px-2 py-2 text-xs dark:border-zinc-800">
+          <div className="space-y-1">
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-zinc-800 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500 text-base">
+                ☺
+              </span>
+              <span>
+                <div className="text-xs font-medium">Profile</div>
+                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  Your profile settings
+                </div>
+              </span>
             </button>
             <button
               type="button"
-              onClick={onLogout}
-              className="w-full rounded-md border border-red-500 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:border-red-500 dark:text-red-400 dark:hover:bg-red-950/30"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-zinc-800 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
             >
-              Logout
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500 text-base">
+                ✉
+              </span>
+              <span>
+                <div className="text-xs font-medium">Messages</div>
+                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  Your messages and tasks
+                </div>
+              </span>
             </button>
             <button
               type="button"
-              onClick={onClose}
-              className="w-full rounded-md border border-zinc-300 px-3 py-1.5 text-xs text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-zinc-800 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
             >
-              Close
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-fuchsia-500 text-base">
+                👥
+              </span>
+              <span>
+                <div className="text-xs font-medium">Team</div>
+                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  Your team members
+                </div>
+              </span>
+            </button>
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-zinc-800 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500 text-base">
+                ₿
+              </span>
+              <span>
+                <div className="text-xs font-medium">Billing</div>
+                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  Your billing information
+                </div>
+              </span>
+            </button>
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-zinc-800 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500 text-base">
+                ⚙
+              </span>
+              <span>
+                <div className="text-xs font-medium">Settings</div>
+                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  Webapp settings
+                </div>
+              </span>
             </button>
           </div>
+        </div>
+
+        <div className="border-t border-zinc-200 px-4 pb-4 pt-2 dark:border-zinc-800">
+          <Button
+            fullWidth
+            size="md"
+            variant="secondary"
+            className="mt-1 justify-center rounded-xl bg-zinc-900 text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+            onClick={onLogout}
+          >
+            Logout
+          </Button>
         </div>
       </div>
     </div>
@@ -205,13 +285,14 @@ export function ProfileImageModal({
           <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
             Profile image
           </h2>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onClose}
-            className="rounded-full px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            className="rounded-full px-2 py-1 text-xs"
           >
             ✕
-          </button>
+          </Button>
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row">
@@ -253,13 +334,14 @@ export function ProfileImageModal({
                   <span className="font-medium text-zinc-700 dark:text-zinc-200">
                     Webcam
                   </span>
-                  <button
-                    type="button"
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="px-2 py-0.5 text-[11px]"
                     onClick={cameraActive ? stopCamera : startCamera}
-                    className="rounded-md border border-zinc-300 px-2 py-0.5 text-[11px] text-zinc-700 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
                   >
                     {cameraActive ? "Stop" : "Start"}
-                  </button>
+                  </Button>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="h-20 w-28 overflow-hidden rounded-md bg-black/60">
@@ -276,34 +358,35 @@ export function ProfileImageModal({
                       </div>
                     )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={captureFromCamera}
+                  <Button
+                    size="sm"
                     disabled={!cameraActive || uploading}
-                    className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                    className="px-3 py-1.5 text-xs"
+                    onClick={captureFromCamera}
                   >
                     {uploading ? "Saving..." : "Capture & save"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
 
             <div className="flex justify-end gap-2 pt-1">
-              <button
-                type="button"
+              <Button
+                size="sm"
+                variant="secondary"
+                className="px-3 py-1.5 text-xs"
                 onClick={onClose}
-                className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
               >
                 Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
+              </Button>
+              <Button
+                size="sm"
+                className="px-3 py-1.5 text-xs"
                 disabled={saving}
-                className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                onClick={handleSave}
               >
                 {saving ? "Saving..." : "Save changes"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

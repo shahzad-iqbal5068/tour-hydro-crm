@@ -23,6 +23,15 @@ import {
   Anchor,
   Sailboat,
   Ship,
+  Settings,
+  Palette,
+  CreditCard,
+  Bell,
+  AppWindow,
+  Lock,
+  BookText,
+  HelpCircle,
+  MessageCircleQuestion,
 } from "lucide-react";
 
 const sections: {
@@ -37,7 +46,7 @@ const sections: {
     {
       key: "dashboard",
       label: "Dashboard",
-      icon: <LayoutDashboard className="h-5 w-5" />,
+      icon: <LayoutDashboard className="h-6 w-6 text-indigo-800" />,
       items: [
         { href: "/", label: "Home", icon: <Home className="h-4 w-4" /> },
       ],
@@ -45,15 +54,15 @@ const sections: {
     {
       key: "inqueries",
       label: "Inqueries",
-      icon: <ClipboardList className="h-5 w-5" />,
+      icon: <ClipboardList className="h-6 w-6 text-cyan-800" />,
       items: [
-        { href: "/inqueries", label: "Inqueries", icon: <ClipboardList className="h-4 w-4" /> },
+        { href: "/inqueries", label: "Inqueries", icon: <ClipboardList className="h-6 w-6 text-pink-800" /> },
       ],
     },
     {
       key: "bookings",
       label: "Bookings",
-      icon: <TicketPercent className="h-5 w-5" />,
+      icon: <TicketPercent className="h-6 w-6 text-emerald-800" />,
       items: [
         { href: "/bookings/canal", label: "Canal", icon: <Ship className="h-6 w-6 text-blue-500" /> },
         { href: "/bookings/marina", label: "Marina", icon: <Anchor className="h-6 w-6 text-yellow-500" /> },
@@ -65,35 +74,52 @@ const sections: {
     {
       key: "followups",
       label: "Follow-ups",
-      icon: <BellRing className="h-5 w-5" />,
+      icon: <BellRing className="h-6 w-6 text-red-800" />,
       items: [
-        { href: "/followups", label: "Follow-ups", icon: <BellRing className="h-4 w-4" /> },
+        { href: "/followups", label: "Follow-ups", icon: <BellRing className="h-6 w-6 text-red-800" /> },
       ],
     },
     {
       key: "admin",
       label: "Admin",
-      icon: <ShieldCheck className="h-5 w-5" />,
+      icon: <ShieldCheck className="h-6 w-6 text-indigo-800" />,
       items: [
-        { href: "/admin/performance", label: "Performance", icon: <TrendingUp className="h-4 w-4" /> },
-        { href: "/admin/users", label: "Users", icon: <Users className="h-4 w-4" /> },
-        { href: "/admin/attendance", label: "Attendance overview", icon: <ClipboardCheck className="h-4 w-4" /> },
+        { href: "/admin/performance", label: "Performance", icon: <TrendingUp className="h-6 w-6 text-emerald-800" /> },
+        { href: "/admin/users", label: "Users", icon: <Users className="h-6 w-6 text-indigo-800" /> },
+        { href: "/admin/attendance", label: "Attendance overview", icon: <ClipboardCheck className="h-6 w-6 text-cyan-800" /> },
       ],
       requiredPermissions: [Permission.MANAGE_USERS, Permission.VIEW_ALL_ATTENDANCE],
     },
     {
       key: "attendance",
       label: "Attendance",
-      icon: <CalendarClock className="h-5 w-5" />,
+      icon: <CalendarClock className="h-6 w-6 text-indigo-800" />,
       items: [{ href: "/attendance", label: "My Attendance", icon: <CalendarCheck className="h-4 w-4" /> }],
+    },
+    {
+      key: "settings",
+      label: "Settings",
+      icon: <Settings className="h-6 w-6 text-emerald-700" />,
+      items: [
+        { href: "/settings", label: "General", icon: <Settings className="h-4 w-4" /> },
+        { href: "/settings/appearance", label: "Appearance", icon: <Palette className="h-4 w-4 text-sky-400" /> },
+        { href: "/settings/billing", label: "Billing", icon: <CreditCard className="h-4 w-4 text-emerald-400" /> },
+        { href: "/settings/notifications", label: "Notifications", icon: <Bell className="h-4 w-4 text-blue-400" /> },
+        { href: "/settings/applications", label: "Applications", icon: <AppWindow className="h-4 w-4 text-purple-400" /> },
+        { href: "/settings/sessions", label: "Sessions & Password", icon: <Lock className="h-4 w-4 text-amber-400" /> },
+        { href: "/settings/docs", label: "Documentation", icon: <BookText className="h-4 w-4 text-zinc-400" /> },
+        { href: "/settings/faq", label: "Tailux FAQ", icon: <HelpCircle className="h-4 w-4 text-lime-400" /> },
+        { href: "/settings/support", label: "Ask a Question", icon: <MessageCircleQuestion className="h-4 w-4 text-pink-400" /> },
+      ],
     },
   ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname === "/login" || pathname === "/register";
+  type ThemeMode = "light" | "dark" | "system";
   // Important: keep initial render deterministic to avoid hydration mismatch.
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<ThemeMode>("light");
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<SectionKey>("dashboard");
@@ -104,20 +130,34 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- intentional post-mount sync */
     setMounted(true);
-    const stored = window.localStorage.getItem("theme");
-    if (stored === "light" || stored === "dark") {
+    const stored = window.localStorage.getItem("theme") as ThemeMode | null;
+    if (stored === "light" || stored === "dark" || stored === "system") {
       setTheme(stored);
     }
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   useEffect(() => {
-    if (theme === "dark") {
+    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
+    const effectiveTheme = theme === "system" ? (prefersDark ? "dark" : "light") : theme;
+    if (effectiveTheme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
   }, [theme]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<ThemeMode>).detail;
+      if (detail === "light" || detail === "dark" || detail === "system") {
+        setTheme(detail);
+        window.localStorage.setItem("theme", detail);
+      }
+    };
+    window.addEventListener("hydro-theme-change", handler as EventListener);
+    return () => window.removeEventListener("hydro-theme-change", handler as EventListener);
+  }, []);
 
   useEffect(() => {
     // Read JWT from cookie on the client
@@ -166,7 +206,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname, isAuthPage, router]);
 
   const toggleTheme = () => {
-    const next: "light" | "dark" = theme === "light" ? "dark" : "light";
+    const next: ThemeMode = theme === "dark" ? "light" : "dark";
     setTheme(next);
     if (next === "dark") {
       document.documentElement.classList.add("dark");
@@ -221,7 +261,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-700 dark:bg-black dark:text-zinc-50 overflow-hidden">
       <Navbar
         sectionLabel={currentSection.label}
-        theme={theme}
+        theme={theme === "system" ? "light" : theme}
         onToggleTheme={toggleTheme}
         user={user}
         mounted={mounted}
