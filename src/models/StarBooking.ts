@@ -46,7 +46,6 @@ const StarBookingSchema = new Schema<IStarBooking>(
 
 // Use current schema: clear cached model so old "collection" path is not required (e.g. after deploy or schema change)
 if (mongoose.models.StarBooking) {
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete mongoose.models.StarBooking;
 }
 export const StarBooking: Model<IStarBooking> =

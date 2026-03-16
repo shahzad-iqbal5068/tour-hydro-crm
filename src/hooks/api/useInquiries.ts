@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetcher, apiMutation } from "@/lib/api";
 import { queryKeys } from "./queryKeys";
-import { DEFAULT_STALE_MS, normalizeQueryError, SHORT_STALE_MS, wrapMutationResult } from "./queryHelpers";
+import { DEFAULT_STALE_MS, normalizeQueryError, SHORT_STALE_MS } from "./queryHelpers";
 import type { InquiryRow, InquiryFormValues } from "@/types";
 
 type InquiriesResponse = { data: InquiryRow[]; total?: number };

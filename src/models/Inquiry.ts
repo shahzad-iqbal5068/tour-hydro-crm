@@ -25,7 +25,6 @@ const InquirySchema = new Schema<IInquiry>(
 
 // Ensure current schema is used (e.g. after adding userId); avoids "Cannot populate path userId" from cached model
 if (mongoose.models.Inquiry) {
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete mongoose.models.Inquiry;
 }
 export const Inquiry: Model<IInquiry> =

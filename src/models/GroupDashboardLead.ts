@@ -88,7 +88,6 @@ const GroupDashboardLeadSchema = new Schema<IGroupDashboardLead>(
 );
 
 if (mongoose.models.GroupDashboardLead) {
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete mongoose.models.GroupDashboardLead;
 }
 

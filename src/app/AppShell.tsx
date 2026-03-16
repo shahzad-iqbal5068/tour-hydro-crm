@@ -15,7 +15,6 @@ import {
   TicketPercent,
   BellRing,
   Home,
-  UsersRound,
   TrendingUp,
   Users,
   ClipboardCheck,
@@ -128,13 +127,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   // Hydration: read theme from localStorage only after mount to avoid mismatch
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- intentional post-mount sync */
     setMounted(true);
     const stored = window.localStorage.getItem("theme") as ThemeMode | null;
     if (stored === "light" || stored === "dark" || stored === "system") {
       setTheme(stored);
     }
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   useEffect(() => {
@@ -168,7 +165,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       ?.split("=")[1];
 
     if (!token) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUser(null);
       if (!isAuthPage) {
         router.replace("/login");
@@ -185,7 +181,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         role: string;
         avatarUrl?: string;
       };
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUser({
         id: decoded.id,
         email: decoded.email,
@@ -197,7 +192,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         router.replace("/");
       }
     } catch {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUser(null);
       if (!isAuthPage) {
         router.replace("/login");
@@ -236,15 +230,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (!matched) return;
     const isVisible = visibleSections.some((s) => s.key === matched.key);
     if (isVisible && matched.key !== activeSection) {
-      /* eslint-disable-next-line react-hooks/set-state-in-effect -- sync route to sidebar selection */
       setActiveSection(matched.key);
     } else if (!isVisible && visibleSections.length > 0) {
-      /* eslint-disable-next-line react-hooks/set-state-in-effect -- sync route to sidebar selection */
       setActiveSection(visibleSections[0].key);
     }
-    // visibleSectionKeys used intentionally instead of visibleSections to avoid effect on every render
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- visibleSections read from closure when pathname/sectionKeys change
-  }, [pathname, activeSection, visibleSectionKeys]);
+    // visibleSectionKeys + length used intentionally to avoid effect on every visibleSections ref change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, activeSection, visibleSectionKeys, visibleSections.length]);
 
   const currentSection =
     visibleSections.find((section) => section.key === activeSection) || visibleSections[0];

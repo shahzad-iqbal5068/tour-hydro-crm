@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import type { GroupDashboardFormValues } from "@/types/groupDashboard";
 import {
   GROUP_DASHBOARD_WHATSAPP_OPTIONS,
@@ -63,20 +63,24 @@ export default function GroupDashboardForm({
     register,
     handleSubmit,
     reset,
-    watch,
+    control,
     setValue,
     formState: { isSubmitting },
   } = useForm<GroupDashboardFormValues>({
     defaultValues: initialValues ?? getDefaultGroupDashboardFormValues(),
   });
 
-  const totalAmount = watch("totalAmount");
-  const advancePaid = watch("advancePaid");
+  const totalAmount = useWatch({ control, name: "totalAmount", defaultValue: 0 });
+  const advancePaid = useWatch({ control, name: "advancePaid", defaultValue: 0 });
 
   useEffect(() => {
     const total = Number(totalAmount) || 0;
     const advance = Number(advancePaid) || 0;
-    setValue("remainingAmount", Math.max(0, total - advance));
+    if (!Number.isFinite(total) || !Number.isFinite(advance)) return;
+    setValue("remainingAmount", Math.max(0, total - advance), {
+      shouldDirty: false,
+      shouldTouch: false,
+    });
   }, [totalAmount, advancePaid, setValue]);
 
   useEffect(() => {
@@ -141,7 +145,7 @@ export default function GroupDashboardForm({
           </div>
 
           <div>
-            <label className={labelClass}>Confirm booking date</label>
+            <label className={labelClass}>Confirm Booking Date</label>
             <input
               type="date"
               className={inputClass}

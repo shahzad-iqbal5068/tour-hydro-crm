@@ -297,7 +297,6 @@ export async function GET() {
       const dateAdded = (d.dateAdded as Date | undefined) ?? createdAt;
       const lastFollowUp = d.lastFollowUpDate as Date | undefined;
       const confirmBooking = d.confirmBookingDate as Date | undefined;
-      const travel = (d.travelDate as Date | undefined) ?? confirmBooking;
       const calling = d.callingDate as Date | undefined;
       const totalAmount = d.totalAmount as number | undefined;
       const advancePaid = d.advancePaid as number | undefined;

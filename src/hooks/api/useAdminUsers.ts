@@ -2,7 +2,6 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAdminUsers, saveAdminUser } from "@/lib/api";
-import type { UserRow } from "@/types/user";
 import { queryKeys } from "./queryKeys";
 import { FIVE_MIN_STALE_MS, normalizeQueryError, wrapMutationResult } from "./queryHelpers";
 

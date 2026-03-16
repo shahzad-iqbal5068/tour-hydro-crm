@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ensureImageUrl } from "@/lib/imageUrl";
 
 type AccountState = {
@@ -13,23 +13,33 @@ type AccountState = {
 };
 
 export function AccountGeneralSection() {
-  const [account, setAccount] = useState<AccountState>({
-    name: "",
-    email: "",
-    role: "",
-    avatarUrl: undefined,
-    nickname: "",
-    phone: "",
-  });
-
-  useEffect(() => {
+  const [account, setAccount] = useState<AccountState>(() => {
+    if (typeof document === "undefined") {
+      return {
+        name: "",
+        email: "",
+        role: "",
+        avatarUrl: undefined,
+        nickname: "",
+        phone: "",
+      };
+    }
     try {
-      const cookie = typeof document !== "undefined" ? document.cookie : "";
+      const cookie = document.cookie;
       const token = cookie
         .split("; ")
         .find((c) => c.startsWith("auth_token="))
         ?.split("=")[1];
-      if (!token) return;
+      if (!token) {
+        return {
+          name: "",
+          email: "",
+          role: "",
+          avatarUrl: undefined,
+          nickname: "",
+          phone: "",
+        };
+      }
       const payloadPart = token.split(".")[1];
       const decoded = JSON.parse(atob(payloadPart)) as {
         name: string;
@@ -37,17 +47,25 @@ export function AccountGeneralSection() {
         role: string;
         avatarUrl?: string;
       };
-      setAccount((prev) => ({
-        ...prev,
+      return {
         name: decoded.name ?? "",
         email: decoded.email ?? "",
         role: decoded.role ?? "",
         avatarUrl: decoded.avatarUrl,
-      }));
+        nickname: "",
+        phone: "",
+      };
     } catch {
-      // ignore decode errors, keep defaults
+      return {
+        name: "",
+        email: "",
+        role: "",
+        avatarUrl: undefined,
+        nickname: "",
+        phone: "",
+      };
     }
-  }, []);
+  });
 
   const initials = account.name
     .split(" ")

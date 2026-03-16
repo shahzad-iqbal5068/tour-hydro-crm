@@ -1,18 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type ThemeMode = "light" | "dark" | "system";
 
 export function ThemeModeSection() {
-  const [mode, setMode] = useState<ThemeMode>("light");
-
-  useEffect(() => {
+  const [mode, setMode] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") return "light";
     const stored = window.localStorage.getItem("theme") as ThemeMode | null;
-    if (stored === "light" || stored === "dark" || stored === "system") {
-      setMode(stored);
-    }
-  }, []);
+    return stored === "light" || stored === "dark" || stored === "system"
+      ? stored
+      : "light";
+  });
 
   const handleChange = (next: ThemeMode) => {
     setMode(next);

@@ -1,5 +1,3 @@
-import { apiFetcher } from "./client";
-
 export type UploadImageResponse = { url: string };
 
 /**

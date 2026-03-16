@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { hasPermission, Permission, type PermissionKey } from "@/lib/permissions-config";
+import { hasPermission, type PermissionKey } from "@/lib/permissions-config";
 import { authGetMe } from "@/lib/api";
 
 /**

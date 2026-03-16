@@ -14,7 +14,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import type { PerformanceData, PerformanceRange } from "@/types/admin";
+import type { PerformanceRange } from "@/types/admin";
 import { useAdminPerformance } from "@/hooks/api";
 
 const RANGE_LABELS: Record<PerformanceRange, string> = {
