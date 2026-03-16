@@ -5,6 +5,7 @@ export interface IInquiry extends Document {
   shift: string;
   whatsappName: string;
   remarks?: string;
+  contact?: string;
   userId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -16,6 +17,7 @@ const InquirySchema = new Schema<IInquiry>(
     shift: { type: String, required: true },
     whatsappName: { type: String, required: true },
     remarks: { type: String },
+    contact: { type: String },
     userId: { type: Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }

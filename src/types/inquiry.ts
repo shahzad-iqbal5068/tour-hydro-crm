@@ -8,6 +8,8 @@ export type InquiryRow = {
   shift: string;
   whatsappName: string;
   remarks?: string;
+   /** Optional customer contact / phone */
+  contact?: string;
   name?: string | null;
   userId?: string | null;
 };
@@ -17,5 +19,6 @@ export type InquiryFormValues = {
   shift: string;
   whatsappName: string;
   remarks: string;
+  contact: string;
   userId: string;
 };
