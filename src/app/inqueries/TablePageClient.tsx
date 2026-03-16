@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Toaster, toast } from "react-hot-toast";
 import type { InquiryFormValues as FormValues, AuthUser } from "@/types";
@@ -21,20 +21,15 @@ export default function TablePageClient() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const deleteLoading = deleteMutation.isPending;
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
-
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => {
-    const cookie = typeof document !== "undefined" ? document.cookie : "";
+  const [currentUser] = useState<AuthUser | null>(() => {
+    if (typeof document === "undefined") return null;
+    const cookie = document.cookie ?? "";
     const token = cookie
       .split("; ")
       .find((c) => c.startsWith("auth_token="))
       ?.split("=")[1];
 
-    if (!token) {
-      setCurrentUser(null);
-      return;
-    }
+    if (!token) return null;
 
     try {
       const payloadPart = token.split(".")[1];
@@ -45,17 +40,17 @@ export default function TablePageClient() {
         role: string;
         avatarUrl?: string;
       };
-      setCurrentUser({
+      return {
         id: decoded.id,
         email: decoded.email,
         name: decoded.name,
         role: decoded.role,
         avatarUrl: decoded.avatarUrl,
-      });
+      };
     } catch {
-      setCurrentUser(null);
+      return null;
     }
-  }, []);
+  });
 
   const onSubmit = async (values: FormValues) => {
     const payload = {
