@@ -88,7 +88,7 @@ export function Navbar({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setImageOpen(true)}
+              onClick={() => setInfoOpen(true)}
               className="group flex items-center gap-2 rounded-full border border-transparent px-1 py-0.5 text-left hover:border-zinc-300 dark:hover:border-zinc-600"
             >
               <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-zinc-900 text-xs font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900">

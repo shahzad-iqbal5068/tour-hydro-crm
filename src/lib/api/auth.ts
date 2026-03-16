@@ -1,4 +1,4 @@
-import { apiFetcher, apiMutation } from "./client";
+import { apiMutation } from "./client";
 import type { LoginValues } from "@/types/auth";
 import type { AuthUser } from "@/types/user";
 

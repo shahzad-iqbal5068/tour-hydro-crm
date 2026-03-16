@@ -51,7 +51,7 @@ export default function BookingClient({
     updateMutation,
     deleteMutation,
     followUpDoneMutation,
-  } = useStarBookings(viewFilter === "all" ? "all" : categoryValues);
+  } = useStarBookings(categoryValues);
   const { data: users = [] } = useUsersList();
   const deleteLoading = deleteMutation.isPending;
   const followUpDoneId = followUpDoneMutation.isPending ? followUpDoneMutation.variables ?? null : null;

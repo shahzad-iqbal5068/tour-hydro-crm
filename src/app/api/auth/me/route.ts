@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;

@@ -88,6 +88,11 @@ export default function BookingTable({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
+  const filteredData = useMemo(
+    () => (viewFilter === "all" ? data : data.filter((row) => row.category === viewFilter)),
+    [data, viewFilter]
+  );
+
   const columns = useMemo<ColumnDef<BookingTableRow>[]>(
     () => [
       ...(viewFilter === "all"
@@ -222,8 +227,10 @@ export default function BookingTable({
     [viewFilter, variants, onEdit, onDeleteClick, onFollowUpDone, followUpDoneId]
   );
 
+  // TanStack Table returns stable APIs; suppress incompatible-library for this known pattern
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     state: { sorting, globalFilter: globalQuery, columnFilters },
     onSortingChange: setSorting,

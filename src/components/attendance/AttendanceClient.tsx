@@ -36,7 +36,7 @@ export default function AttendanceClient() {
 
   const [startModalOpen, setStartModalOpen] = useState(false);
   const [endModalOpen, setEndModalOpen] = useState(false);
-  const [capturedUrl, setCapturedUrl] = useState<string | null>(null);
+  const [, setCapturedUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 

@@ -28,7 +28,7 @@ function generatePassword(length = 12): string {
 
 export default function AdminUsersPageClient() {
   const { allowed, loading: authLoading } = useRequirePermission(Permission.MANAGE_USERS);
-  const { users, isLoading: loading, refetch, saveMutation } = useAdminUsers();
+  const { users, isLoading: loading, saveMutation } = useAdminUsers();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<{
     name: string;

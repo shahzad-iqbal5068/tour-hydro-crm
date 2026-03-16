@@ -8,4 +8,5 @@ export type SectionKey =
   | "bookings"
   | "followups"
   | "admin"
-  | "attendance";
+  | "attendance"
+  | "settings";

@@ -42,7 +42,6 @@ const GroupBookingSchema = new Schema<IGroupBooking>(
 );
 
 if (mongoose.models.GroupBooking) {
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete mongoose.models.GroupBooking;
 }
 export const GroupBooking: Model<IGroupBooking> =

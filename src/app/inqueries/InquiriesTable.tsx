@@ -131,9 +131,11 @@ export function InquiriesTable({ rows, error, onEdit, onRequestDelete }: Inquiri
         ),
       },
     ],
-    []
+    [onEdit, onRequestDelete]
   );
 
+  // TanStack Table returns stable APIs; suppress incompatible-library for this known pattern
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: rows,
     columns,
