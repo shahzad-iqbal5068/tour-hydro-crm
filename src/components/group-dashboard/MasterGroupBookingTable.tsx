@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Copy, Trash2, Pencil, MessageCircle } from "lucide-react";
 import type { MasterGroupRow } from "@/data/groupBookingDashboardData";
 import { STATUS_FILTER_OPTIONS } from "@/data/groupBookingDashboardData";
 import {
@@ -11,6 +12,8 @@ import { Badge } from "@/components/ui/Badge";
 
 type MasterGroupBookingTableProps = {
   rows: MasterGroupRow[];
+  onEdit?: (row: MasterGroupRow) => void;
+  onDelete?: (row: MasterGroupRow) => void;
 };
 
 const filterSelectClass =
@@ -51,7 +54,7 @@ function rowMatchesSearch(r: MasterGroupRow, q: string): boolean {
   );
 }
 
-export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTableProps) {
+export default function MasterGroupBookingTable({ rows, onEdit, onDelete }: MasterGroupBookingTableProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [locationFilter, setLocationFilter] = useState("all");
@@ -66,7 +69,7 @@ export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTabl
     return matchSearch && matchStatus && matchLocation && matchWa;
   });
 
-  const columns: { key: keyof MasterGroupRow; label: string }[] = [
+  const columns: { key: keyof MasterGroupRow | "actions"; label: string }[] = [
     { key: "inquiryDate", label: "Inquiry Date" },
     { key: "whatsapp", label: "WhatsApp" },
     { key: "assignedPerson", label: "Assigned Person" },
@@ -81,10 +84,11 @@ export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTabl
     { key: "bookingStatus", label: "Booking Status" },
     { key: "lastFollowUpDate", label: "Last Follow Up Date" },
     { key: "remarks", label: "Remarks" },
-    { key: "callingDate", label: "Calling date" },
+    { key: "callingDate", label: "Calling Date" },
     { key: "totalAmount", label: "Total amount" },
     { key: "advancePaid", label: "Advance Paid" },
     { key: "remainingAmount", label: "Remaining Amount" },
+    { key: "actions", label: "Actions" },
   ];
 
   return (
@@ -143,7 +147,10 @@ export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTabl
           <thead>
             <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
               {columns.map((col) => (
-                <th key={col.key} className="whitespace-nowrap px-4 py-3">
+                <th
+                  key={col.key}
+                  className={`whitespace-nowrap px-4 py-3 ${col.key === "actions" ? "text-right" : ""}`}
+                >
                   {col.label}
                 </th>
               ))}
@@ -162,7 +169,23 @@ export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTabl
                 <td className="whitespace-nowrap px-4 py-3">{cellValue(r.assignedPerson)}</td>
                 <td className="whitespace-nowrap px-4 py-3">{cellValue(r.confirmBookingDate)}</td>
                 <td className="whitespace-nowrap px-4 py-3 font-medium">{r.customerName}</td>
-                <td className="whitespace-nowrap px-4 py-3">{cellValue(r.contact)}</td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!r.contact) return;
+                      navigator.clipboard
+                        .writeText(String(r.contact))
+                        .catch(() => {
+                          // ignore clipboard errors
+                        });
+                    }}
+                    className="inline-flex items-center gap-1 rounded-md border border-zinc-200 px-2 py-0.5 text-[11px] text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  >
+                    <span>{cellValue(r.contact)}</span>
+                    <Copy className="h-3 w-3" aria-hidden />
+                  </button>
+                </td>
                 <td className="whitespace-nowrap px-4 py-3">{cellValue(r.numberOfPersons)}</td>
                 <td className="max-w-[140px] truncate px-4 py-3" title={r.cruiseName}>
                   {cellValue(r.cruiseName)}
@@ -192,6 +215,39 @@ export default function MasterGroupBookingTable({ rows }: MasterGroupBookingTabl
                 <td className="whitespace-nowrap px-4 py-3">{cellValue(r.totalAmount)}</td>
                 <td className="whitespace-nowrap px-4 py-3">{cellValue(r.advancePaid)}</td>
                 <td className="whitespace-nowrap px-4 py-3 font-medium">{cellValue(r.remainingAmount)}</td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 text-[10px] text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      title="Edit"
+                      onClick={() => onEdit?.(r)}
+                    >
+                      <Pencil className="h-3 w-3" aria-hidden />
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 text-[10px] text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      title="Open WhatsApp"
+                      onClick={() => {
+                        if (!r.contact) return;
+                        const phone = String(r.contact).replace(/[^0-9+]/g, "");
+                        const url = `https://wa.me/${phone}`;
+                        window.open(url, "_blank", "noopener,noreferrer");
+                      }}
+                    >
+                      <MessageCircle className="h-3 w-3" aria-hidden />
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-red-200 text-[10px] text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/40"
+                      title="Delete"
+                      onClick={() => onDelete?.(r)}
+                    >
+                      <Trash2 className="h-3 w-3" aria-hidden />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>

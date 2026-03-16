@@ -115,6 +115,173 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) {
+      return NextResponse.json(
+        { message: "id query parameter is required" },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+    await connectToDatabase();
+
+    const update: Record<string, unknown> = {};
+
+    if (body.whatsapp !== undefined) {
+      const whatsapp = str(body.whatsapp, VALID_WHATSAPP);
+      if (!whatsapp) {
+        return NextResponse.json(
+          { message: "Invalid whatsapp value" },
+          { status: 400 }
+        );
+      }
+      update.whatsapp = whatsapp;
+    }
+
+    if (body.location !== undefined) {
+      const location = str(body.location, VALID_LOCATIONS);
+      if (!location) {
+        return NextResponse.json(
+          { message: "Invalid location value" },
+          { status: 400 }
+        );
+      }
+      update.location = location;
+    }
+
+    if (body.bookingStatus !== undefined) {
+      const bookingStatus = str(body.bookingStatus, VALID_STATUSES);
+      if (!bookingStatus) {
+        return NextResponse.json(
+          { message: "Invalid bookingStatus value" },
+          { status: 400 }
+        );
+      }
+      update.bookingStatus = bookingStatus;
+    }
+
+    if (body.inquiryDate !== undefined) {
+      update.inquiryDate = parseDate(body.inquiryDate);
+    }
+    if (body.confirmBookingDate !== undefined) {
+      const confirm = parseDate(body.confirmBookingDate);
+      update.confirmBookingDate = confirm;
+      update.travelDate = confirm;
+    }
+    if (body.customerName !== undefined) {
+      update.customerName = String(body.customerName ?? "").trim();
+    }
+    if (body.contact !== undefined || body.phone !== undefined) {
+      const phone = String(body.contact ?? body.phone ?? "").trim();
+      update.phone = phone || undefined;
+    }
+    if (body.numberOfPersons !== undefined || body.groupSize !== undefined) {
+      update.groupSize = parseNum(body.numberOfPersons ?? body.groupSize);
+    }
+    if (body.assignedAgent !== undefined) {
+      update.assignedAgent = body.assignedAgent
+        ? String(body.assignedAgent).trim()
+        : undefined;
+    }
+    if (body.lastFollowUpDate !== undefined) {
+      update.lastFollowUpDate = parseDate(body.lastFollowUpDate);
+    }
+    if (body.cruiseName !== undefined) {
+      update.cruiseName = body.cruiseName
+        ? String(body.cruiseName).trim()
+        : undefined;
+    }
+    if (body.slotTiming !== undefined) {
+      update.slotTiming = body.slotTiming
+        ? String(body.slotTiming).trim()
+        : undefined;
+    }
+    if (body.groupNo !== undefined) {
+      update.groupNo = body.groupNo ? String(body.groupNo).trim() : undefined;
+    }
+    if (body.remarks !== undefined) {
+      const remarks = body.remarks ? String(body.remarks).trim() : undefined;
+      update.remarks = remarks;
+      update.notes = remarks;
+    }
+    if (body.callingDate !== undefined) {
+      update.callingDate = parseDate(body.callingDate);
+    }
+    if (body.totalAmount !== undefined) {
+      update.totalAmount =
+        body.totalAmount !== "" && body.totalAmount !== null
+          ? parseNum(body.totalAmount)
+          : undefined;
+    }
+    if (body.advancePaid !== undefined) {
+      update.advancePaid =
+        body.advancePaid !== "" && body.advancePaid !== null
+          ? parseNum(body.advancePaid)
+          : undefined;
+    }
+
+    const doc = await GroupDashboardLead.findByIdAndUpdate(id, update, {
+      new: true,
+    }).lean();
+
+    if (!doc) {
+      return NextResponse.json(
+        { message: "Group dashboard lead not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(doc, { status: 200 });
+  } catch (error) {
+    console.error("Error updating group dashboard lead:", error);
+    const message =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    return NextResponse.json(
+      { message: "Internal server error", error: message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) {
+      return NextResponse.json(
+        { message: "id query parameter is required" },
+        { status: 400 }
+      );
+    }
+
+    await connectToDatabase();
+    const deleted = await GroupDashboardLead.findByIdAndDelete(id);
+    if (!deleted) {
+      return NextResponse.json(
+        { message: "Group dashboard lead not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: "Group dashboard lead deleted" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting group dashboard lead:", error);
+    const message =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    return NextResponse.json(
+      { message: "Internal server error", error: message },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET() {
   try {
     await connectToDatabase();
