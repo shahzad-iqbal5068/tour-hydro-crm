@@ -4,16 +4,18 @@ import { useEffect, useRef } from "react";
 import { Bell, X } from "lucide-react";
 import type { AlertItem } from "@/data/groupBookingDashboardData";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNotifications } from "@/contexts/NotificationsContext";
 
 type GroupDashboardAlertsProps = {
   alerts: AlertItem[];
   onDismiss?: (id: string) => void;
 };
 
-/** Play notification sound once when alerts first appear. Uses public/sounds/notification.wav */
+/** Play notification sound and push to global notifications when alerts first appear. */
 function usePlayNotificationWhenAlertsAppear(alerts: AlertItem[]) {
   const hasPlayedRef = useRef(false);
   const prevCountRef = useRef(0);
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
     const count = alerts.length;
@@ -25,20 +27,22 @@ function usePlayNotificationWhenAlertsAppear(alerts: AlertItem[]) {
       return;
     }
 
-    // Play only when we go from 0 alerts to at least 1 (new alerts appeared)
+    // When we go from 0 alerts to at least 1: sound + global notification (panel auto-opens)
     if (!hadAlerts && count > 0 && !hasPlayedRef.current) {
       hasPlayedRef.current = true;
+      addNotification({
+        title: "Group Dashboard alerts",
+        message: count === 1 ? "1 new alert" : `${count} new alerts`,
+      });
       try {
         const audio = new Audio("/sounds/notification.wav");
         audio.volume = 0.7;
-        audio.play().catch(() => {
-          // Browsers often block autoplay until user interaction; ignore
-        });
+        audio.play().catch(() => {});
       } catch {
         // Ignore if file missing or playback fails
       }
     }
-  }, [alerts.length]);
+  }, [alerts.length, addNotification]);
 }
 
 export default function GroupDashboardAlerts({

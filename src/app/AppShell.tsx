@@ -68,6 +68,7 @@ const sections: {
         { href: "/bookings/creek", label: "Creek", icon: <Sailboat className="h-6 w-6 text-green-500" /> },
         { href: "/bookings/group", label: "Group Dashboard",  icon: <LayoutDashboard className="h-6 w-6 text-sky-500" /> },
         { href: "/bookings/group/gb-form", label: "New Group", icon: <ClipboardList className="h-6 w-6 text-purple-500" /> },
+        { href: "/bookings/agent", label: "Agent", icon: <Users className="h-6 w-6 text-emerald-700" /> },
       ],
     },
     {
