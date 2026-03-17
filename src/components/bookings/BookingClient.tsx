@@ -5,7 +5,7 @@ import { Toaster, toast } from "react-hot-toast";
 import { useStarBookings, useUsersList } from "@/hooks/api";
 import { PageLoader } from "@/components/ui/PageLoader";
 import type { BookingVariantOption } from "@/types/booking";
-import { CANAL_VARIANTS } from "./bookingVariants";
+import { CANAL_VARIANTS } from "../../types/bookingVariants";
 import BookingForm, { type BookingFormValues } from "./BookingForm";
 import BookingTable, { type BookingTableRow } from "./BookingTable";
 

@@ -9,6 +9,7 @@ export const queryKeys = {
     categories != null
       ? (["bookings", Array.isArray(categories) ? categories.sort().join(",") : categories] as const)
       : (["bookings"] as const),
+  agentBookings: () => ["agent-bookings"] as const,
   groupBookings: () => ["group-bookings"] as const,
   groupDashboardLeads: () => ["group-dashboard-leads"] as const,
   followups: (date: string, category?: string) =>

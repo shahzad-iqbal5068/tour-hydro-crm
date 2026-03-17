@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import {
-  dashboardKPI,
-  dashboardAlerts,
   dashboardTabs,
   visitLeadRows,
   dueIn15Item,
   liveActivities,
 } from "@/data/groupBookingDashboardData";
-import type { MasterGroupRow } from "@/data/groupBookingDashboardData";
+import type { MasterGroupRow, AlertItem } from "@/types/groupBookingDashboardData";
 import { useGroupDashboardLeads } from "@/hooks/api";
 import GroupDashboardKPICards from "./GroupDashboardKPICards";
 import GroupDashboardAlerts from "./GroupDashboardAlerts";
@@ -23,18 +21,23 @@ import TodayFollowUpsTable from "./TodayFollowUpsTable";
 import VisitLeadsTable from "./VisitLeadsTable";
 import DueIn15MinutesCard from "./DueIn15MinutesCard";
 import LiveActivityMonitor from "./LiveActivityMonitor";
+import getUpcomingFollowUps from "@/components/ui/getUpcomingFollowUps";
+import { daysUntil } from "../ui/daysUtils";
+
+
+
 
 export default function GroupBookingDashboardClient() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("control-tower");
-  const [alerts, setAlerts] = useState(dashboardAlerts);
   const { data: apiLeads, deleteMutation } = useGroupDashboardLeads();
 
+ 
   const masterRowsFromApi: MasterGroupRow[] = useMemo(() => {
     return apiLeads.map((row) => ({
       id: row._id,
       inquiryDate: row.inquiryDate ?? row.dateAdded ?? "—",
-      whatsapp: row.whatsapp,
+      whatsapp: (row.whatsapp ?? "Fun Factory") as MasterGroupRow["whatsapp"],
       assignedPerson: row.assignedPerson ?? row.assignedAgent ?? "—",
       confirmBookingDate: row.confirmBookingDate ?? "—",
       customerName: row.customerName,
@@ -56,16 +59,63 @@ export default function GroupBookingDashboardClient() {
 
   // Use only live data from the database for the master dashboard
   const allMasterRows = masterRowsFromApi;
-
+ 
   /** When a WhatsApp tab is selected, show only that WhatsApp; otherwise show all. Calendar uses all rows. */
   const masterRows =
     activeTab === "control-tower" || activeTab === "calendar"
       ? allMasterRows
       : allMasterRows.filter((r) => r.whatsapp === activeTab);
 
-  const handleDismissAlert = (id: string) => {
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
-  };
+  const kpiMetrics = useMemo(() => {
+    const totalActive = allMasterRows.length;
+    const notDone = allMasterRows.filter(
+      (r) => r.bookingStatus?.toLowerCase() !== "done"
+    );
+
+    const followUpsToday = notDone.filter((r) => {
+      const d = daysUntil(r.confirmBookingDate);
+      return d === 0;
+    }).length;
+
+    const overdueFollowUps = notDone.filter((r) => {
+      const d = daysUntil(r.confirmBookingDate);
+      return d !== null && d < 0;
+    }).length;
+
+    const confirmedBookings = allMasterRows.filter(
+      (r) => r.bookingStatus?.toLowerCase() === "done"
+    ).length;
+
+    const cancelledOrNoReply = allMasterRows.filter(
+      (r) => r.bookingStatus?.toLowerCase() === "not done"
+    ).length;
+
+    const highPriority = notDone.filter((r) => {
+      const d = daysUntil(r.confirmBookingDate);
+      return d !== null && d >= 0 && d <= 1;
+    }).length;
+
+    return [
+      { label: "Total Active Group Leads", value: totalActive },
+      { label: "Follow Ups Today", value: followUpsToday },
+      { label: "Overdue Follow Ups", value: overdueFollowUps },
+      { label: "Due in 15 Minutes", value: 0 },
+      { label: "Visit Leads Today", value: 0 },
+      { label: "Confirmed Bookings", value: confirmedBookings },
+      { label: "Cancelled / No Reply", value: cancelledOrNoReply },
+      { label: "High Priority Leads", value: highPriority },
+    ];
+  }, [allMasterRows]);
+
+  const alerts: AlertItem[] = useMemo(() => {
+    const upcoming = getUpcomingFollowUps(allMasterRows);
+    return upcoming.map((row) => ({
+      id: row.id,
+      type: "follow-up",
+      title: "Upcoming follow-up",
+      message: `${row.customerName} • ${row.confirmBookingDate || "No date"}`,
+    }));
+  }, [allMasterRows]);
 
   const handleEditLead = (row: MasterGroupRow) => {
     router.push(`/bookings/group/gb-form?id=${row.id}`);
@@ -99,20 +149,15 @@ export default function GroupBookingDashboardClient() {
             </p>
           </header>
           {alerts.length > 0 && (
-            // <div className="flex shrink-0 flex-col gap-3 sm:ml-4">
             <div className="absolute right-0 top-0 flex flex-col gap-3">
-
-              <GroupDashboardAlerts
-                alerts={alerts}
-                onDismiss={handleDismissAlert}
-              />
+              <GroupDashboardAlerts alerts={alerts} />
             </div>
           )}
         </div>
 
         {/* KPI Cards */}
         <div className="mb-6">
-          <GroupDashboardKPICards metrics={dashboardKPI} />
+          <GroupDashboardKPICards metrics={kpiMetrics} />
         </div>
 
         {/* Tabs */}

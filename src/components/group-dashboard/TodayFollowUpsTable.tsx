@@ -1,35 +1,15 @@
 "use client";
 
-import type { MasterGroupRow } from "@/data/groupBookingDashboardData";
+import type { MasterGroupRow } from "@/types/groupBookingDashboardData";
+import getUpcomingFollowUps from "@/components/ui/getUpcomingFollowUps";
+import { Toaster, toast } from "react-hot-toast";
 
 type TodayFollowUpsTableProps = {
   rows: MasterGroupRow[];
 };
 
-function daysUntil(dateStr: string): number | null {
-  if (!dateStr) return null;
-  const target = new Date(dateStr);
-  if (Number.isNaN(target.getTime())) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  target.setHours(0, 0, 0, 0);
-  const diffMs = target.getTime() - today.getTime();
-  return Math.round(diffMs / (1000 * 60 * 60 * 24));
-}
-
 export default function TodayFollowUpsTable({ rows }: TodayFollowUpsTableProps) {
- 
-  const filtered = rows.filter((r) => {
-    // Not Done only
-    if (r.bookingStatus?.toLowerCase() === "done") return false;
-  
-    // Use confirmBookingDate
-    const d = daysUntil(r.confirmBookingDate);
-  
-    if (d === null) return false;
-  
-    return d >= 0 && d <= 3;
-  });
+  const filtered = getUpcomingFollowUps(rows);
 
   if (filtered.length === 0) {
     return (
@@ -41,6 +21,7 @@ export default function TodayFollowUpsTable({ rows }: TodayFollowUpsTableProps) 
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+      <Toaster position="top-right" />
       <div className="border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
           Today & Upcoming Follow Ups
@@ -60,20 +41,61 @@ export default function TodayFollowUpsTable({ rows }: TodayFollowUpsTableProps) 
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => (
-              <tr
-                key={r.id}
-                className="border-b border-zinc-100 last:border-0 hover:bg-amber-50/50 dark:hover:bg-amber-950/20"
-              >
-                <td className="whitespace-nowrap px-3 py-2 font-medium">{r.whatsapp}</td>
-                <td className="whitespace-nowrap px-3 py-2">{r.contact}</td>
-                <td className="whitespace-nowrap px-3 py-2">{r.numberOfPersons}</td>
-                <td className="whitespace-nowrap px-3 py-2">{r.groupNo}</td>
-                <td className="whitespace-nowrap px-3 py-2">{r.bookingStatus}</td>
-                <td className="whitespace-nowrap px-3 py-2">{r.lastFollowUpDate}</td>
-                <td className="whitespace-nowrap px-3 py-2">{r.callingDate}</td>
-              </tr>
-            ))}
+            {filtered.map((r) => {
+              const statusLower = r.bookingStatus?.toLowerCase() ?? "";
+              const isDone = statusLower === "done";
+              const isNotDone = statusLower === "not done";
+
+              const rowHighlight =
+                isDone
+                  ? "bg-emerald-50 dark:bg-emerald-950/20"
+                  : isNotDone
+                    ? "bg-rose-50 animate-pulse dark:bg-rose-950/30"
+                    : "";
+
+              return (
+                <tr
+                  key={r.id}
+                  className={`border-b border-zinc-100 last:border-0 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 ${rowHighlight}`}
+                >
+                  <td className="whitespace-nowrap px-3 py-2 font-medium">
+                    {r.whatsapp}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!r.contact) return;
+                        navigator.clipboard
+                          .writeText(String(r.contact))
+                          .then(() => {
+                            toast.success("Contact copied");
+                          })
+                          .catch(() => {
+                            toast.error("Failed to copy");
+                          });
+                      }}
+                      className="inline-flex items-center gap-1 rounded-md border border-zinc-200 px-2 py-0.5 text-[11px] text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                      <span>{r.contact}</span>
+                    </button>
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    {r.numberOfPersons}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2">{r.groupNo}</td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    {r.bookingStatus}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    {r.lastFollowUpDate}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    {r.callingDate}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

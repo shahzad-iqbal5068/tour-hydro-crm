@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock } from "lucide-react";
-import type { DueIn15Item } from "@/data/groupBookingDashboardData";
+import type { DueIn15Item } from "@/types/groupBookingDashboardData";
 
 type DueIn15MinutesCardProps = {
   item: DueIn15Item;

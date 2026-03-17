@@ -1,6 +1,6 @@
 "use client";
 
-import type { ActivityItem } from "@/data/groupBookingDashboardData";
+import type { ActivityItem } from "@/types/groupBookingDashboardData";
 
 type LiveActivityMonitorProps = {
   activities: ActivityItem[];

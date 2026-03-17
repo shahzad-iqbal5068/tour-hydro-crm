@@ -1,15 +1,20 @@
 "use client";
 
-import type { AgentBookingRow } from "./AgentBookingTypes";
+import { Pencil, Trash2 } from "lucide-react";
+import type { AgentBookingRow } from "@/types/AgentBookingTypes";
 
 type AgentBookingTableProps = {
   data: AgentBookingRow[];
   onAddAgentClick: () => void;
+  onEdit: (row: AgentBookingRow) => void;
+  onDelete: (row: AgentBookingRow) => void;
 };
 
 export default function AgentBookingTable({
   data,
   onAddAgentClick,
+  onEdit,
+  onDelete,
 }: AgentBookingTableProps) {
   return (
     <div className="w-full rounded-lg border border-zinc-200 bg-white p-4 text-xs shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
@@ -59,6 +64,7 @@ export default function AgentBookingTable({
                 Agent commission
               </th>
               <th className="whitespace-nowrap px-2 py-2 text-left">Came</th>
+              <th className="whitespace-nowrap px-2 py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -117,6 +123,26 @@ export default function AgentBookingTable({
                       : row.cameStatus === "came"
                       ? "Came"
                       : "Not came"}
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-1.5 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => onEdit(row)}
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 text-[10px] text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        title="Edit"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onDelete(row)}
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-red-200 text-[10px] text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/40"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

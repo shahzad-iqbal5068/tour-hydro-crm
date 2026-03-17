@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import type { AgentBookingFormValues, CameStatus } from "./AgentBookingTypes";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import type { AgentBookingFormValues } from "@/types/AgentBookingTypes";
 
 type AgentBookingFormProps = {
   initialValues?: AgentBookingFormValues | null;
@@ -9,7 +10,7 @@ type AgentBookingFormProps = {
   onCancel: () => void;
 };
 
-const emptyValues: AgentBookingFormValues = {
+const defaultValues: AgentBookingFormValues = {
   customerName: "",
   cruiseName: "",
   pax: "",
@@ -29,31 +30,26 @@ export default function AgentBookingForm({
   onSubmit,
   onCancel,
 }: AgentBookingFormProps) {
-  const [values, setValues] = useState<AgentBookingFormValues>(
-    initialValues ?? emptyValues
-  );
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<AgentBookingFormValues>({
+    defaultValues: initialValues ?? defaultValues,
+  });
 
-  const handleChange =
-    (field: keyof AgentBookingFormValues) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const value = e.target.value;
-      if (field === "cameStatus") {
-        setValues((prev) => ({
-          ...prev,
-          cameStatus: value as CameStatus,
-          cameCustomText: value === "custom" ? prev.cameCustomText : "",
-        }));
-      } else {
-        setValues((prev) => ({ ...prev, [field]: value }));
-      }
-    };
+  useEffect(() => {
+    if (initialValues) {
+      reset(initialValues);
+    } else {
+      reset(defaultValues);
+    }
+  }, [initialValues, reset]);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    onSubmit(values);
-  };
-
-  const isCustom = values.cameStatus === "custom";
+  const cameStatus = watch("cameStatus");
+  const isCustom = cameStatus === "custom";
 
   return (
     <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-4 text-xs shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
@@ -70,7 +66,10 @@ export default function AgentBookingForm({
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="grid grid-cols-2 gap-3"
+      >
         <div className="col-span-2">
           <label className="mb-1 block text-[11px] text-zinc-500 dark:text-zinc-400">
             Customer name
@@ -78,10 +77,19 @@ export default function AgentBookingForm({
           <input
             type="text"
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            value={values.customerName}
-            onChange={handleChange("customerName")}
-            required
+            {...register("customerName", {
+              required: "Customer name is required",
+              minLength: {
+                value: 2,
+                message: "Customer name must be at least 2 characters",
+              },
+            })}
           />
+          {errors.customerName && (
+            <p className="mt-0.5 text-[10px] text-red-500">
+              {errors.customerName.message}
+            </p>
+          )}
         </div>
 
         <div className="col-span-2">
@@ -91,8 +99,7 @@ export default function AgentBookingForm({
           <input
             type="text"
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            value={values.cruiseName}
-            onChange={handleChange("cruiseName")}
+            {...register("cruiseName")}
           />
         </div>
 
@@ -104,9 +111,17 @@ export default function AgentBookingForm({
             type="number"
             min={0}
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            value={values.pax}
-            onChange={handleChange("pax")}
+            {...register("pax", {
+              required: "Pax is required",
+              validate: (value) =>
+                Number(value) > 0 || "Pax must be greater than 0",
+            })}
           />
+          {errors.pax && (
+            <p className="mt-0.5 text-[10px] text-red-500">
+              {errors.pax.message}
+            </p>
+          )}
         </div>
 
         <div>
@@ -116,9 +131,19 @@ export default function AgentBookingForm({
           <input
             type="text"
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            value={values.contact}
-            onChange={handleChange("contact")}
+            {...register("contact", {
+              required: "Contact is required",
+              minLength: {
+                value: 5,
+                message: "Contact seems too short",
+              },
+            })}
           />
+          {errors.contact && (
+            <p className="mt-0.5 text-[10px] text-red-500">
+              {errors.contact.message}
+            </p>
+          )}
         </div>
 
         <div>
@@ -128,8 +153,7 @@ export default function AgentBookingForm({
           <input
             type="date"
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            value={values.date}
-            onChange={handleChange("date")}
+            {...register("date")}
           />
         </div>
 
@@ -140,8 +164,7 @@ export default function AgentBookingForm({
           <input
             type="time"
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            value={values.time}
-            onChange={handleChange("time")}
+            {...register("time")}
           />
         </div>
 
@@ -152,8 +175,7 @@ export default function AgentBookingForm({
           <input
             type="text"
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            value={values.payment}
-            onChange={handleChange("payment")}
+            {...register("payment")}
           />
         </div>
 
@@ -164,8 +186,7 @@ export default function AgentBookingForm({
           <input
             type="text"
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            value={values.b2b}
-            onChange={handleChange("b2b")}
+            {...register("b2b")}
           />
         </div>
 
@@ -176,8 +197,7 @@ export default function AgentBookingForm({
           <input
             type="text"
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            value={values.htCommission}
-            onChange={handleChange("htCommission")}
+            {...register("htCommission")}
           />
         </div>
 
@@ -188,8 +208,7 @@ export default function AgentBookingForm({
           <input
             type="text"
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            value={values.agentCommission}
-            onChange={handleChange("agentCommission")}
+            {...register("agentCommission")}
           />
         </div>
 
@@ -200,8 +219,7 @@ export default function AgentBookingForm({
           <div className="flex gap-2">
             <select
               className="w-32 rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-              value={values.cameStatus}
-              onChange={handleChange("cameStatus")}
+              {...register("cameStatus", { required: true })}
             >
               <option value="came">Came</option>
               <option value="not_came">Not came</option>
@@ -212,11 +230,20 @@ export default function AgentBookingForm({
                 type="text"
                 placeholder="Enter custom status"
                 className="flex-1 rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none ring-0 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                value={values.cameCustomText}
-                onChange={handleChange("cameCustomText")}
+                {...register("cameCustomText", {
+                  validate: (value) =>
+                    cameStatus !== "custom" ||
+                    value.trim().length > 0 ||
+                    "Custom status is required when 'Custom' is selected",
+                })}
               />
             )}
           </div>
+          {errors.cameCustomText && (
+            <p className="mt-0.5 text-[10px] text-red-500">
+              {errors.cameCustomText.message}
+            </p>
+          )}
         </div>
 
         <div className="col-span-2 mt-2 flex justify-end gap-2">
@@ -229,9 +256,10 @@ export default function AgentBookingForm({
           </button>
           <button
             type="submit"
-            className="rounded-md bg-indigo-600 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-indigo-500"
+            disabled={isSubmitting}
+            className="rounded-md bg-indigo-600 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Save
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
         </div>
       </form>

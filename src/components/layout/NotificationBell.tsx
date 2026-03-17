@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Bell, X } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationsContext";
 
@@ -15,6 +16,7 @@ function formatTime(ts: number): string {
 }
 
 export function NotificationBell() {
+  const router = useRouter();
   const {
     notifications,
     unreadCount,
@@ -88,7 +90,12 @@ export function NotificationBell() {
                 {notifications.map((n) => (
                   <li
                     key={n.id}
-                    className={`group flex gap-2 px-3 py-2 text-left ${!n.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""}`}
+                    className={`group flex cursor-pointer gap-2 px-3 py-2 text-left ${!n.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""}`}
+                    onClick={() => {
+                      markRead(n.id);
+                      closePanel();
+                      router.push("/bookings/group");
+                    }}
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
@@ -105,7 +112,8 @@ export function NotificationBell() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         markRead(n.id);
                         removeNotification(n.id);
                       }}

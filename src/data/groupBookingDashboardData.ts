@@ -1,45 +1,12 @@
 /**
  * Dummy data for Group Booking Control Tower / Dashboard.
  * Used by group booking dashboard page and its components.
+ * 
+ * Types for this data live in `@/types/groupBookingDashboardData`.
  */
-
+ 
 import { GROUP_DASHBOARD_WHATSAPP_OPTIONS } from "@/types/groupDashboard";
-
-export type KPIMetric = {
-  label: string;
-  value: number;
-};
-
-export type AlertItem = {
-  id: string;
-  type: "follow-up" | "reminder";
-  title: string;
-  message: string;
-  time?: string;
-  status?: string;
-};
-
-export type MasterGroupRow = {
-  id: string;
-  inquiryDate: string;
-  whatsapp: string;
-  assignedPerson: string;
-  confirmBookingDate: string;
-  customerName: string;
-  contact: string;
-  numberOfPersons: number;
-  cruiseName: string;
-  slotTiming: string;
-  location: string;
-  groupNo: string;
-  bookingStatus: string;
-  lastFollowUpDate: string;
-  remarks: string;
-  callingDate: string;
-  totalAmount: number | string;
-  advancePaid: number | string;
-  remainingAmount: number | string;
-};
+import type { VisitLeadRow, DueIn15Item, ActivityItem } from "@/types/groupBookingDashboardData";
 
 /** All status options for the Status dropdown */
 export const STATUS_FILTER_OPTIONS = [
@@ -63,64 +30,6 @@ export const VISIT_REMINDER_OPTIONS = [
   "No Visit",
   "On The Way",
 ] as const;
-
-
-
-export type VisitLeadRow = {
-  id: string;
-  guest: string;
-  contact: string;
-  location: string;
-  visitStatus: string;
-  reminderStatus: string;
-  agent: string;
-  notes: string;
-};
-
-export type DueIn15Item = {
-  id: string;
-  guestName: string;
-  locationAndPax: string;
-  time: string;
-  agent: string;
-  popupStatus: string;
-};
-
-export type ActivityItem = {
-  id: string;
-  customerName: string;
-  dateTime: string;
-  action: string;
-  agent?: string;
-};
-
-export const dashboardKPI: KPIMetric[] = [
-  { label: "Total Active Group Leads", value: 8 },
-  { label: "Follow Ups Today", value: 1 },
-  { label: "Overdue Follow Ups", value: 1 },
-  { label: "Due in 15 Minutes", value: 1 },
-  { label: "Visit Leads Today", value: 2 },
-  { label: "Confirmed Bookings", value: 1 },
-  { label: "Cancelled / No Reply", value: 1 },
-  { label: "High Priority Leads", value: 5 },
-];
-
-export const dashboardAlerts: AlertItem[] = [
-  {
-    id: "1",
-    type: "follow-up",
-    title: "Follow-Up",
-    message: "Follow up with John Smith at 7:00 PM",
-  },
-  {
-    id: "2",
-    type: "reminder",
-    title: "15 Minute Reminder",
-    message: "Follow up with John Smith for Canal group at 7:00 PM. Popup status: Pending.",
-  },
-];
-
-
 
 
 

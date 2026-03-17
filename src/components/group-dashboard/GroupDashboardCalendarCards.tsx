@@ -1,6 +1,6 @@
 "use client";
 
-import type { MasterGroupRow } from "@/data/groupBookingDashboardData";
+import type { MasterGroupRow } from "@/types/groupBookingDashboardData";
 import { Badge } from "@/components/ui/Badge";
 
 type GroupDashboardCalendarCardsProps = {
