@@ -1,6 +1,6 @@
 "use client";
 
-import type { VisitLeadRow } from "@/data/groupBookingDashboardData";
+import type { VisitLeadRow } from "@/types/groupBookingDashboardData";
 
 type VisitLeadsTableProps = {
   rows: VisitLeadRow[];

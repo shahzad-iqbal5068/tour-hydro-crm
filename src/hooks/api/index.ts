@@ -1,6 +1,7 @@
 export { apiFetcher, apiMutation } from "@/lib/api";
 export { useInquiries, useInquiry } from "./useInquiries";
 export { useStarBookings } from "./useStarBookings";
+export { useAgentBookings } from "./useAgentBookings";
 export { useGroupBookings } from "./useGroupBookings";
 export { useGroupDashboardLeads } from "./useGroupDashboardLeads";
 export { useFollowups, useFollowupsToday } from "./useFollowups";

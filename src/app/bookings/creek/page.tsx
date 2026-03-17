@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import BookingClient from "@/components/bookings/BookingClient";
-import { CREEK_VARIANTS } from "@/components/bookings/bookingVariants";
+import { CREEK_VARIANTS } from "@/types/bookingVariants";
 
 export const metadata: Metadata = {
   title: "Creek Bookings | Hydro CRM",

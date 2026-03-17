@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Copy, Trash2, Pencil, MessageCircle } from "lucide-react";
-import type { MasterGroupRow } from "@/data/groupBookingDashboardData";
+import type { MasterGroupRow } from "@/types/groupBookingDashboardData";
 import { STATUS_FILTER_OPTIONS } from "@/data/groupBookingDashboardData";
 import {
   GROUP_DASHBOARD_LOCATION_OPTIONS,
@@ -158,10 +158,22 @@ export default function MasterGroupBookingTable({ rows, onEdit, onDelete }: Mast
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => (
+            {filtered.map((r) => {
+              const statusLower = r.bookingStatus?.toLowerCase() ?? "";
+              const isDone = statusLower === "done";
+              const isNotDone = statusLower === "not done";
+
+              const rowHighlight =
+                isDone
+                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-200"
+                  : isNotDone
+                    ? "bg-rose-100 text-rose-800 animate-pulse dark:bg-rose-950/30 dark:text-rose-400"
+                    : "";
+
+              return (
               <tr
                 key={r.id}
-                className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className={`border-b border-zinc-100 last:border-0 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900 ${rowHighlight}`}
               >
                 <td className="whitespace-nowrap px-4 py-3 text-zinc-700 dark:text-zinc-200">
                   {cellValue(r.inquiryDate)}
@@ -250,7 +262,7 @@ export default function MasterGroupBookingTable({ rows, onEdit, onDelete }: Mast
                   </div>
                 </td>
               </tr>
-            ))}
+            );})}
           </tbody>
         </table>
       </div>
