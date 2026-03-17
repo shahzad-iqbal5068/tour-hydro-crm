@@ -6,6 +6,7 @@ import type { AuthUser } from "@/types";
 import { authLogout } from "@/lib/api";
 import { ensureImageUrl } from "@/lib/imageUrl";
 import { ProfileInfoModal, ProfileImageModal } from "./ProfileModal";
+import { NotificationBell } from "./NotificationBell";
 
 type NavbarProps = {
   sectionLabel: string;
@@ -73,6 +74,7 @@ export function Navbar({
         </span>
       </div>
       <div className="flex items-center gap-3">
+        <NotificationBell />
         <button
           type="button"
           onClick={onToggleTheme}
